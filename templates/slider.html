@@ -1,0 +1,19 @@
+<div id="content-slider">
+	{% for post in latest_posts|slice:":3" %}
+	<div class="content-slides" id="slide{{ forloop.counter }}" style="background-image:url('{{ MEDIA_URL }}{{ post.cover_image }}')">
+		<!--<img src="{{ MEDIA_URL }}{{  post.cover_image }}" alt="image"/>-->
+		<div class="slide-blurb">
+			<h4>
+				<a href="/{{ post.id }}">{{ post.title }}</a>
+			</h4>
+			<p>{{ post.body|slice:":280" }}
+			{% if post.body|slice:"280:" %}
+			...
+			{% endif %}</p>
+		</div>
+		<div id="image-attribution">Attribution: {{ post.cover_image_attribution|markdown }}</div>
+	</div>
+	{% endfor %}
+	<div class="slider-button" id="slider-button-back">&lt;</div>
+	<div class="slider-button" id="slider-button-forward">&gt;</div>
+</div>
