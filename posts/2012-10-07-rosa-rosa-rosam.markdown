@@ -1,5 +1,6 @@
 ---
 title: Rosa Rosa Rosam
+cover-image: golden_leaf.jpg
 author: Ovidius
 ---
 

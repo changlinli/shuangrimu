@@ -11,7 +11,7 @@
 
 	<!-- Plugins -->
 	<link href="/prettify/prettify.css" rel="Stylesheet" type="text/css"></link>
-	<script type="text/javascript" src="/prettify/prettify.js""></script>
+	<script type="text/javascript" src="/prettify/prettify.js"></script>
 	
 	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 	<script type="text/x-mathjax-config">
@@ -24,6 +24,7 @@
 	MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 	</script>
 	<script type = "text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+	<script type = "text/javascript" src="/js/slider.js"></script>
 	<script type = "text/javascript" src="/js/highlighting.js"></script>
 	<script type="text/javascript">
 		highlighting("#archives");
@@ -43,6 +44,21 @@
 		<a href="/" style="position:relative;float:left;"><img src="/images/绘图3.png" alt="Rimu"/></a>
 		<a href="/"><h1 style="left:-200px;font-size:50px;margin:0px;">Shuang Rimu</h1></a>
 		<p style="float:right;position:relative;left:-30px;">A blog about random stuff</p>
+	</div>
+	<div id="content-slider">
+		$for(posts)$
+		<div class="content-slides" id="slide$listIndex$" style="background-image:url('/images/$cover-image$')">
+			<div class="slide-blurb">
+				<h4>
+					<a href="$url$">$title$</a>
+				</h4>
+				$if(subtitle)$ $subtitle$ $else$ $body$ $endif$
+			</div>
+			<div id="image-attribution">Attribution:$if(attribution)$ $attribution$ $else$ No attribution found! $endif$</div>
+		</div>
+		$endfor$
+		<div class="slider-button" id="slider-button-back">&lt;</div>
+		<div class="slider-button" id="slider-button-forward">&gt;</div>
 	</div>
 	<div id="sidebar">
 		<ul id="sidenav">

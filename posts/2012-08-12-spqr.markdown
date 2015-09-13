@@ -1,5 +1,7 @@
 ---
 title: S.P.Q.R.
+cover-image: golden_leaf.jpg
+tags: foo, bar1, bar2
 ---
 
 Mauris in lorem nisl. Maecenas tempus facilisis ante, eget viverra nisl

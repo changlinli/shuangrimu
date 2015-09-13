@@ -1,5 +1,6 @@
 ---
 title: Tu Quoque
+cover-image: images/golden_leaf.jpg
 author: Julius
 ---
 

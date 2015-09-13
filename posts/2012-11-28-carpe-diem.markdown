@@ -1,5 +1,6 @@
 ---
 title: Carpe Diem
+cover-image: golden_leaf.jpg
 ---
 
 Fusce tortor quam, egestas in posuere quis, porttitor vel turpis. Donec

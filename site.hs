@@ -6,6 +6,9 @@ import           Text.Blaze.Html5                (toHtml, toValue, (!))
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes     as A
 import           Text.Printf
+import           Data.Bifoldable (bifoldMap)
+import           System.FilePath
+import           Data.List (isSuffixOf)
 
 
 --------------------------------------------------------------------------------
@@ -27,42 +30,51 @@ main = hakyll $ do
         route   idRoute
         compile compressCssCompiler
 
-    match (fromList ["about.rst", "contact.markdown"]) $ do
-        route   $ setExtension "html"
-        compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/default.html" defaultContext
-            >>= relativizeUrls
-
     tags <- buildTags "posts/*" (fromCapture "tags/*.html")
-    let postCtxWithTags = tagsCtx tags <> postCtx
+
+    let postCtxWithTags = injectCustomColor "" <> tagsCtx tags <> postCtx
+
+    match (fromList ["about.rst", "contact.markdown"]) $ do
+        route   $ cleanHTMLRoute
+        compile $ do 
+            posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
+            pandocCompiler
+                >>= loadAndApplyTemplate "templates/default.html" (injectCustomColor "#about" <> tagsCtx tags <> listField "posts" postCtx (return posts) <> defaultContext)
+                >>= relativizeUrls
+                >>= cleanIndexUrls
 
     match "posts/*" $ do
-        route $ setExtension "html"
+        route $ cleanHTMLRoute
         compile $ pandocCompiler
+            >>= saveSnapshot "content"
             >>= loadAndApplyTemplate "templates/post.html"    postCtxWithTags
             >>= loadAndApplyTemplate "templates/default.html" postCtxWithTags
             >>= relativizeUrls
+            >>= cleanIndexUrls
 
     create ["archive.html"] $ do
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
+            posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
             let archiveCtx =
-                    listField "posts" postCtx (return posts) `mappend`
-                    constField "title" "Archives"            `mappend`
+                    listField "posts" postCtx (return (posts)) <>
+                    constField "title" "Archives"            <>
+                    injectCustomColor ""                     <>
+                    tagsCtx tags                             <>
                     defaultContext
 
             makeItem ""
                 >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
                 >>= loadAndApplyTemplate "templates/default.html" archiveCtx
                 >>= relativizeUrls
+                >>= cleanIndexUrls
 
     match "index.html" $ do
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
+            posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
             let indexCtx =
-                    listField "posts" postCtx (return posts) <>
+                    listField "posts" postCtxWithIdx (return (zipWith (\post idx -> fmap (\postContents -> (postContents, idx)) post) posts (fmap show [1 .. 3]))) <>
                     constField "title" "Home"                <>
                     tagsCtx tags                             <>
                     injectCustomColor  ""                    <>
@@ -70,8 +82,9 @@ main = hakyll $ do
 
             getResourceBody
                 >>= applyAsTemplate indexCtx
-                >>= loadAndApplyTemplate "templates/default.html" indexCtx
+                >>= loadAndApplyTemplate "templates/withSlider.html" indexCtx
                 >>= relativizeUrls
+                >>= cleanIndexUrls
 
     match "templates/*" $ compile templateCompiler
 
@@ -82,6 +95,16 @@ postCtx =
     dateField "date" "%B %e, %Y" `mappend`
     defaultContext
 
+type IdxAsString = String
+
+postCtxWithIdx :: Context (String, IdxAsString)
+postCtxWithIdx = Context f
+  where
+    postCtxF = unContext (postCtx)
+    idxCtxF = unContext (field "listIndex" $ return . itemBody)
+    f "listIndex" things item = idxCtxF "listIndex" things (fmap snd item)
+    f key things item = postCtxF key things (fmap fst item)
+
 tagsCtx :: Tags -> Context a
 tagsCtx tags = tagsFieldAsLIs "tags" tags
 
@@ -89,8 +112,6 @@ tagsFieldAsLIs :: String -> Tags -> Context a
 tagsFieldAsLIs contextKey tags = listField contextKey defaultContext (return (collectTags tags))
   where
     collectTags tags = map (\(t, _) -> Item (tagsMakeId tags t) t) (tagsMap tags)
-
-collectTags' tags = map (\(t, _) -> Item (tagsMakeId tags t) t) (tagsMap tags)
 
 injectCustomColor :: String -> Context String
 injectCustomColor = constField "headstyle" . colorSelection 
@@ -109,4 +130,26 @@ simpleRenderLink _   Nothing         = Nothing
 simpleRenderLink tag (Just filePath) =
   Just $ H.a ! A.href (toValue $ toUrl filePath) $ toHtml tag
 
-listFieldWithIndex = undefined
+-- Begin from http://www.rohanjain.in/hakyll-clean-urls/
+cleanHTMLRoute :: Routes
+cleanHTMLRoute = customRoute createIndexRoute
+  where
+    createIndexRoute ident = takeDirectory p </> takeBaseName p </> "index.html"
+                            where p = toFilePath ident
+
+cleanIndexUrls :: Item String -> Compiler (Item String)
+cleanIndexUrls = return . fmap (withUrls cleanIndex)
+
+cleanIndexHtmls :: Item String -> Compiler (Item String)
+cleanIndexHtmls = return . fmap (replaceAll pattern replacement)
+    where
+      pattern = "/index.html"
+      replacement = const "/"
+
+cleanIndex :: String -> String
+cleanIndex url
+    | idx `isSuffixOf` url = take (length url - length idx) url
+    | otherwise            = url
+  where idx = "index.html"
+
+-- End from http://www.rohanjain.in/hakyll-clean-urls/

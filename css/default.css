@@ -133,6 +133,7 @@ h3
 	background-color:rgba(127,127,127,.8);
 	max-width:800px;
 	max-height:59px;
+	overflow: hidden;
 }
 
 .slide-blurb h4
