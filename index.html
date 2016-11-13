@@ -13,15 +13,12 @@ things help at least one other person.</p>
 
 <p>The slider above should have some of my most recent posts (unless you have
 Javascript disabled in which case you will only see my most recent post and be
-unable to use the slider): the below has some of my more popular ones.</p>
+unable to use the slider): below are some of my more popular ones.</p>
 
 <h2>Popular Posts</h2>
 
 <ul>
     $for(popularPosts)$
-        <li>
-            <a href="$url$">$title$</a> - $date$
-						<p>$subhead$</p>
-        </li>
+		$partial("templates/post-list-item.html")$
     $endfor$
 </ul>

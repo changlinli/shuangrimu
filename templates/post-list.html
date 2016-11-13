@@ -1,8 +1,5 @@
 <ul>
     $for(posts)$
-        <li>
-            <a href="$url$">$title$</a> - $date$
-						<p>$subhead$</p>
-        </li>
+		$partial("templates/post-list-item.html")$
     $endfor$
 </ul>
