@@ -1,8 +1,13 @@
 <div class="info">
-    Posted on $date$
-    $if(author)$
-        by $author$
-    $endif$
+    <h1>$title$</h1>
+		<div id="cover-image-cropper" style="background-image:url('/images/$cover-image$')"></div>
+		<div id="post-image-attribution">
+		<p>Image Attribution:</p>
+		<p>$attribution$</p>
+		</div>
+		<h3 style="float:left">$date$</h3>
+		<h3 style="float:right">$tags$</h3>
+		<div style=clear:both"></div>
 </div>
 
 $body$

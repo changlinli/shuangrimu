@@ -34,32 +34,26 @@ main = hakyll $ do
 
     let postCtxWithTags = injectCustomColor "" <> tagsCtx tags <> postCtx
 
-    match (fromList ["about.rst", "contact.markdown"]) $ do
-        route   $ cleanHTMLRoute
-        compile $ do 
-            posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
-            pandocCompiler
-                >>= loadAndApplyTemplate "templates/default.html" (injectCustomColor "#about" <> tagsCtx tags <> listField "posts" postCtx (return posts) <> defaultContext)
-                >>= relativizeUrls
-                >>= cleanIndexUrls
+    createBasePage "about.rst" "#about" (tagsCtx tags)
+
+    createBasePage "contact.markdown" "#contact" (tagsCtx tags)
 
     match "posts/*" $ do
-        route $ cleanHTMLRoute
+        route $ setExtension "html"
         compile $ pandocCompiler
             >>= saveSnapshot "content"
-            >>= loadAndApplyTemplate "templates/post.html"    postCtxWithTags
+            >>= loadAndApplyTemplate "templates/post.html"    (tagsField "tags" tags <> injectCustomColor "" <> postCtx)
             >>= loadAndApplyTemplate "templates/default.html" postCtxWithTags
             >>= relativizeUrls
-            >>= cleanIndexUrls
 
-    create ["archive.html"] $ do
+    create ["archives.html"] $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
             let archiveCtx =
-                    listField "posts" postCtx (return (posts)) <>
+                    listField "posts" postCtx (return posts) <>
                     constField "title" "Archives"            <>
-                    injectCustomColor ""                     <>
+                    injectCustomColor "#archives"            <>
                     tagsCtx tags                             <>
                     defaultContext
 
@@ -67,7 +61,6 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
                 >>= loadAndApplyTemplate "templates/default.html" archiveCtx
                 >>= relativizeUrls
-                >>= cleanIndexUrls
 
     match "index.html" $ do
         route idRoute
@@ -84,12 +77,36 @@ main = hakyll $ do
                 >>= applyAsTemplate indexCtx
                 >>= loadAndApplyTemplate "templates/withSlider.html" indexCtx
                 >>= relativizeUrls
-                >>= cleanIndexUrls
+
+    tagsRules tags $ \tag pattern -> do
+        route idRoute
+        compile $ do
+            posts <- recentFirst =<< loadAll pattern
+            let ctx = 
+                    constField "tagname" tag <> 
+                    injectCustomColor "" <>
+                    tagsCtx tags <> 
+                    listField "posts" postCtx (return posts) <> 
+                    defaultContext
+            makeItem ""
+                >>= loadAndApplyTemplate "templates/tag.html" ctx
+                >>= loadAndApplyTemplate "templates/default.html" ctx
+                >>= relativizeUrls
 
     match "templates/*" $ compile templateCompiler
 
 
 --------------------------------------------------------------------------------
+
+createBasePage :: Pattern -> String -> Context String -> Rules ()
+createBasePage sourcefile colortagname generatedTagsCtx =
+    match sourcefile $ do
+        route   $ setExtension "html"
+        compile $ do 
+            pandocCompiler
+                >>= loadAndApplyTemplate "templates/default.html" (injectCustomColor colortagname <> generatedTagsCtx <> defaultContext)
+                >>= relativizeUrls
+
 postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`

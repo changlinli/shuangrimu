@@ -1,6 +1,7 @@
 ---
 title: S.P.Q.R.
 cover-image: golden_leaf.jpg
+attribution: something
 tags: foo, bar1, bar2
 ---
 
