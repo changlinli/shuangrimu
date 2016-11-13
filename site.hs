@@ -44,9 +44,9 @@ main = hakyll $ do
 
     let postCtxWithTags = injectCustomColor "" <> tagsCtx tags <> postCtx
 
-    createBasePage "about.rst" "#about" (tagsCtx tags)
+    createBasePage "about.md" "#about" (tagsCtx tags)
 
-    createBasePage "contact.markdown" "#contact" (tagsCtx tags)
+    createBasePage "contact.md" "#contact" (tagsCtx tags)
 
     createBasePage "licensing.md" "#licensing" (tagsCtx tags)
 
