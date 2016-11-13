@@ -48,6 +48,8 @@ main = hakyll $ do
 
     createBasePage "contact.markdown" "#contact" (tagsCtx tags)
 
+    createBasePage "licensing.md" "#licensing" (tagsCtx tags)
+
     match "posts/*" $ do
         route $ setExtension "html"
         compile $ pandocCompiler

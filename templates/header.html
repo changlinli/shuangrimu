@@ -1,0 +1,37 @@
+<head>
+	<title>Shuang Rimu</title>
+
+	<!-- Custom Stylesheets -->
+	<link href="/css/default.css" type="text/css" rel="Stylesheet" />
+	<link href="/images/favicon0.ico" rel="SHORTCUT ICON" />
+
+	<!-- Plugins -->
+	<link href="/prettify/prettify.css" rel="Stylesheet" type="text/css"></link>
+	<script type="text/javascript" src="/prettify/prettify.js"></script>
+	
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	<script type="text/x-mathjax-config">
+	MathJax.Hub.Config({
+	  tex2jax: {
+		inlineMath: [['$$','$$'], ['\\(','\\)']],
+		processEscapes: true
+	  }
+	});
+	MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+	</script>
+	<script type = "text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+	<script type = "text/javascript" src="/js/slider.js"></script>
+	<script type = "text/javascript" src="/js/highlighting.js"></script>
+	<script type="text/javascript">
+		highlighting("#archives");
+		highlighting("#about");
+		highlighting("#contact");
+		highlighting("#licensing");
+		$for(tags)$
+		highlighting("#tag-$body$");
+		$endfor$
+	</script>
+	<style>
+		$headstyle$
+	</style>
+</head>

@@ -1,6 +1,3 @@
-Licensing
-=========
-
  The unofficial summary is essentially feel free to use the work you see on this
 site in both commerical and non-commercial uses. I only require that you
 attribute me (either Rimu Shuang or my actual name) in whatever derivative works
