@@ -9,6 +9,13 @@ import           Text.Printf
 import           Data.Bifoldable (bifoldMap)
 import           System.FilePath
 import           Data.List (isSuffixOf)
+import           Data.Set (Set)
+import qualified Data.Set as Set
+import qualified Data.HashMap.Lazy as Map
+import qualified Data.Aeson.Types as Aeson
+import qualified Data.Aeson as Aeson
+import           Data.Text (Text)
+import           Control.Monad
 
 --------------------------------------------------------------------------------
 main :: IO ()
@@ -73,7 +80,9 @@ main = hakyll $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
+            popularPosts <- (filterM (\post -> fmap (\x -> Set.member x mostPopularPostTitles) (getItemTitle (itemIdentifier post)))) =<< loadAllSnapshots "posts/*" "content"
             let indexCtx =
+                    listField "popularPosts" postCtx (return popularPosts) <>
                     listField "posts" postCtxWithIdx (return (zipWith (\post idx -> fmap (\postContents -> (postContents, idx)) post) posts (fmap show [1 .. 3]))) <>
                     constField "title" "Home"                <>
                     tagsCtx tags                             <>
@@ -104,6 +113,9 @@ main = hakyll $ do
 
 
 --------------------------------------------------------------------------------
+
+mostPopularPostTitles :: Set Text
+mostPopularPostTitles = Set.fromList [ "S.P.Q.R.", "Rosa Rosa Rosam" ]
 
 createBasePage :: Pattern -> String -> Context String -> Rules ()
 createBasePage sourcefile colortagname generatedTagsCtx =
@@ -201,3 +213,12 @@ createFeed filename renderer = create filename $ do
         posts <- fmap (take 10) . recentFirst =<<
             loadAllSnapshots "posts/*" "content"
         renderer feedConfig feedCtx posts
+
+getItemTitle :: MonadMetadata m => Identifier -> m Text
+getItemTitle identifier = do
+    metadata <- getMetadata identifier
+    case Map.lookup "title" metadata of
+         Nothing -> fail $ "We were unable to find a title for " ++ show identifier
+         Just title -> case title of 
+                            Aeson.String titleText -> return titleText
+                            _ -> fail $ "We found a title for " ++ show identifier ++ " but it doesn't look like a valid JSON string: " ++ show title

@@ -2,6 +2,7 @@
 title: S.P.Q.R.
 cover-image: golden_leaf.jpg
 attribution: something
+subhead: This is an interesting article!
 tags: foo, bar1, bar2
 ---
 

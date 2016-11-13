@@ -1,16 +1,27 @@
 ---
-title: Home
+title: Shuang Rimu
 ---
 
-<h2>Welcome</h2>
+<h1>Welcome!</h1>
 
-<img src="/images/haskell-logo.png" style="float: right; margin: 10px;" />
+<p>This is a blog about a variety of things, but with a bit of a focus on math and
+programming. It aims to be a small repository of mainly information about small
+things I stumble through as well as the occasional opinion about something.</p>
 
-<p>Welcome to my blog!</p>
+<p>It's a small hope that the hours and days I spend debugging and hacking around
+things help at least one other person.</p>
 
-<p>I've reproduced a list of recent posts here for your reading pleasure:</p>
+<p>The slider above should have some of my most recent posts (unless you have
+Javascript disabled in which case you will only see my most recent post and be
+unable to use the slider): the below has some of my more popular ones.</p>
 
-<h2>Random Posts</h2>
-$partial("templates/post-list.html")$
+<h2>Popular Posts</h2>
 
-<p>…or you can find more in the <a href="/archives.html">archives</a>.</p>
+<ul>
+    $for(popularPosts)$
+        <li>
+            <a href="$url$">$title$</a> - $date$
+						<p>$subhead$</p>
+        </li>
+    $endfor$
+</ul>

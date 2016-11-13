@@ -2,6 +2,7 @@
 title: Carpe Diem
 cover-image: golden_leaf.jpg
 attribution: "hello!"
+subhead: Seize the day!
 tags: something
 ---
 

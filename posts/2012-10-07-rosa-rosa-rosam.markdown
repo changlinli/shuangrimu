@@ -3,6 +3,7 @@ title: Rosa Rosa Rosam
 cover-image: golden_leaf.jpg
 author: Ovidius
 attribution: This is a thing!
+subhead: This is another interesting article!
 tags: more
 ---
 
