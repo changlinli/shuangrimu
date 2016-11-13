@@ -10,10 +10,13 @@ import           Data.Bifoldable (bifoldMap)
 import           System.FilePath
 import           Data.List (isSuffixOf)
 
-
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
+    match "favicon.ico" $ do
+        route   idRoute
+        compile copyFileCompiler
+
     match "images/*" $ do
         route   idRoute
         compile copyFileCompiler
@@ -62,15 +65,9 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" archiveCtx
                 >>= relativizeUrls
 
-    -- Taken almost verbatim from the following tutorial
-    -- https://jaspervdj.be/hakyll/tutorials/05-snapshots-feeds.html
-    create ["atom.xml"] $ do
-        route idRoute
-        compile $ do
-            let feedCtx = postCtx <> bodyField "description" 
-            posts <- fmap (take 10) . recentFirst =<<
-                loadAllSnapshots "posts/*" "content"
-            renderAtom feedConfig feedCtx posts
+    createFeed ["atom.xml"] renderAtom
+
+    createFeed ["rss.xml"] renderRss
 
     match "index.html" $ do
         route idRoute
@@ -189,3 +186,18 @@ feedConfig = FeedConfiguration
     , feedAuthorEmail = "rimu@shuangrimu.com"
     , feedRoot = "http://www.shuangrimu.com"
     }
+
+createFeed
+  :: [Identifier]
+     -> (FeedConfiguration
+         -> Context String -> [Item String] 
+         -> Compiler (Item String)
+         )
+     -> Rules ()
+createFeed filename renderer = create filename $ do
+    route idRoute
+    compile $ do
+        let feedCtx = postCtx <> bodyField "description"
+        posts <- fmap (take 10) . recentFirst =<<
+            loadAllSnapshots "posts/*" "content"
+        renderer feedConfig feedCtx posts
