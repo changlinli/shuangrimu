@@ -62,6 +62,16 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" archiveCtx
                 >>= relativizeUrls
 
+    -- Taken almost verbatim from the following tutorial
+    -- https://jaspervdj.be/hakyll/tutorials/05-snapshots-feeds.html
+    create ["atom.xml"] $ do
+        route idRoute
+        compile $ do
+            let feedCtx = postCtx <> bodyField "description" 
+            posts <- fmap (take 10) . recentFirst =<<
+                loadAllSnapshots "posts/*" "content"
+            renderAtom feedConfig feedCtx posts
+
     match "index.html" $ do
         route idRoute
         compile $ do
@@ -170,3 +180,12 @@ cleanIndex url
   where idx = "index.html"
 
 -- End from http://www.rohanjain.in/hakyll-clean-urls/
+
+feedConfig :: FeedConfiguration
+feedConfig = FeedConfiguration
+    { feedTitle = "Shuang Rimu"
+    , feedDescription = "A blog about random things"
+    , feedAuthorName = "Changlin Li"
+    , feedAuthorEmail = "rimu@shuangrimu.com"
+    , feedRoot = "http://www.shuangrimu.com"
+    }
