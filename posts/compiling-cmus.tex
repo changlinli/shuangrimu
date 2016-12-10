@@ -1,0 +1,213 @@
+---
+title: cmus Problems on Debian
+cover-image: debian_cmus.png
+attribution: 'Debian Logo: Software in the Public Interest, Inc. "The Debian Open Use Logo." 1999. Under a GNU Lesser General Public License (NOT a CC-BY 3.0 License).
+
+Screenshot: cmus Project. "Untitled." 2013. Under a GNU General Public License v3.0 (NOT a CC-BY 3.0 License).
+
+Logo + Screenshot: Shuang, Rimu. "Untitled." Mar 19, 2014. Under a GNU General Public License v3.0 (NOT a CC-BY 3.0 License).'
+subhead: Sometimes CMus breaks down on you and you need to build it by hand...
+tags: cmus, debian
+date: 2014-03-19T00:05:00+0000
+---
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsfonts, amsthm, booktabs, verbatim, hyperref, listings, color}
+
+%\numberwithin{equation}{section}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+
+% Surrounding angular brackets
+\newcommand{\surang}[1]{\langle #1 \rangle}
+
+\lstset{ %
+	basicstyle=\footnotesize\ttfamily,        % the size of the fonts that are used for the code
+	breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+	breaklines=true,                 % sets automatic line breaking
+	captionpos=b,                    % sets the caption-position to bottom
+	deletekeywords={...},            % if you want to delete keywords from the given language
+	escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+	extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+	frame=single,                    % adds a frame around the code
+	keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+	morekeywords={*,...},            % if you want to add more keywords to the set
+	numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+	numbersep=5pt,                   % how far the line-numbers are from the code
+	showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+	showstringspaces=false,          % underline spaces within strings only
+	showtabs=false,                  % show tabs within strings adding particular underscores
+	stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+	tabsize=2,                       % sets default tabsize to 2 spaces
+	commentstyle=\color{blue},
+	keywords=\color{red},
+	language=Bash,
+	title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+\begin{document}
+This post is going to be about installing cmus on a Debian jesse system.
+cmus is a great, lightweight commandline music player.
+I first discovered it when I was running Ubuntu, where a simple \lstinline$sudo apt-get install cmus$ was sufficient to install cmus.
+It was wonderful: here was a nifty little program that cloud a wide variety of different audio files and which I could \lstinline$ssh$ into a machine and run without having to finagle around with X settings.
+
+Hence, when I switched to Debian, I assumed things would be more or less the same. 
+Run a little \lstinline$sudo apt-get install cmus$ and off I should be.
+Alas, 'twas not to be.
+
+\lstinline$apt-get$ did in fact install cmus and it appeared to go without a hitch.
+However, when I tried to play AAC files, WMA files, Ogg files, FLAC files, etc., essentially anything other than MP3 files I heard a weird distorted, noisy sound.
+It was recognizably the song that I was playing, but there was an inordinate amount of noise and the pitch of the song was off;
+moreover, the noise seemed to be interleaved with the actual notes of the song so that the runtime of the song was longer than it should be.
+
+Naturally, I searched the internet to see whether I could find any solutions to this problem.
+Apparently other people had the same problem (\href{https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=728202}{such as this bug report}, \href{http://lists.alioth.debian.org/pipermail/pkg-multimedia-maintainers/2013-November/035237.html}{this note}, and \href{http://crunchbang.org/forums/viewtopic.php?id=31116}{this forum post}) and it was specific to Debian.
+Unfortunately, nobody seemed to have a solution.
+The Debian maintainers of the cmus package appeared to be aware of the problem, but nothing had been done about it so far.
+
+After a couple of months of living with this issue (where I would just stream music from my Ubuntu server or Pandora instead), I decided to just try compiling everything from source and seeing if that fixed it.
+That proved more difficult than I imagined.
+Like any large multimedia project, there were \emph{a lot} of dependencies.
+
+For the full story (and whatever interesting insights it might give you into the problem at hand), read this post to its end.
+Otherwise, if you're here because you are on Debian and were having compilation troubles and you just want the damn thing made and done, here are the quick and dirty steps.
+Install all the necessary packages.
+Some of them will be from \href{deb-multimedia.org}{http://deb-multimedia.org/}.
+So that means that you should have \lstinline$deb http://www.deb-multimedia.org testing main non-free$ to your \lstinline$sources.list$ file (which is in \lstinline$/etc/apt$).
+Of course change \lstinline$testing$ to whatever version of Debian you're running.
+You can also change \lstinline$non-free$ if you would like; 
+we're not going to be using any non-free packages here.
+We'll also have to install the keyring that deb-multimedia uses to heed GPG's warnings about the public key.
+Specifically, you do something along the lines of
+\begin{lstlisting}
+	# First add deb-multimedia to your sources file
+	sudo vi /etc/apt/sources.list # Of course change vi to whatever editor you use
+	sudo apt-get update
+	sudo apt-get install deb-multimedia-keyring
+	sudo apt-get update
+\end{lstlisting}
+
+Now we can get to actually installing the packages.
+For me, this meant running 
+\begin{lstlisting}
+	sudo apt-get install libavcodec-dev libavformat-dev libpulse-dev libopusfile-dev \
+	    libcue-dev libflac-dev libvorbis-dev libwavpack-dev libfaad-dev libmp4v2-dev \
+	    libmad0-dev libswresample-dev
+\end{lstlisting}
+
+Finally we can run
+\begin{lstlisting}
+	./configure CONFIG_ROAR=n && sudo make install
+\end{lstlisting}
+
+\emph{The actual story proceeds below.}
+
+Naturally the first thing after downloading the cmus git repository I did was run
+\begin{lstlisting}
+	./configure
+\end{lstlisting}
+This showed me a bunch of dependencies I was missing.
+The ones with scary warning messages were the ones I paid attention to.
+As it turns out, most of the time the Debian package which installs the libraries for dependency foo is libfoo-dev.
+In my case, this meant running \lstinline$sudo apt-get install$ on the following packages:
+\begin{lstlisting}
+	libavcodec-dev
+	libavformat-dev
+	libroar-dev
+	libpulse-dev
+	libopusfile-dev
+	libcue-dev
+\end{lstlisting}
+So I ran \lstinline$./configure$ one more time.
+No scary messages came up so I ran \lstinline$make install$, crossed my fingers, and watched gleefully as the compilation went without a hitch.
+Then I ran cmus.
+
+No dice.
+A cryptic message \lstinline$getnodeadd: Can not open /etc/decnet.conf$ appeared.
+Some internet searching revealed that this had something to do with DECNet and that the Debian package which provided it was \lstinline$dnet-common$.
+
+So, not knowing anything about DECNet, but eager to get this compilation off the ground, I ran \lstinline$sudo apt-get install dnet-common$.
+It promptly gave me a configuration page where it warned me it would change the MAC address of my network card.
+That MAC address is used for my computer to authenticate to some of my school networks.
+Not good.
+Well time to \lstinline$make uninstall$ and try again.
+
+So what was causing this DECNet dependency?
+Some more internet trawling revealed that roar was the dependency.
+So I switched it off in the compilation process with 
+\begin{lstlisting}
+	./configure CONFIG_ROAR=n
+\end{lstlisting}
+followed up by 
+\begin{lstlisting}
+	make install
+\end{lstlisting}
+
+I ran cmus again.
+It worked!
+Now I wanted to make sure that I had the proper libraries to play the music so I decided to start off with FLAC, Ogg Vorbis, and WAV files since cmus had been having trouble playing those earlier.
+I took a look at the \lstinline$config.mk$ that was generated by \lstinline$configure$.
+The bottom of the file looked something like
+\begin{lstlisting}
+	CONFIG_CDIO = n
+	CONFIG_FLAC = n
+	CONFIG_MAD = n
+	CONFIG_MIKMOD = n
+	CONFIG_MODPLUG = n
+	CONFIG_MPC = n
+	CONFIG_VORBIS = n
+	CONFIG_OPUS = y
+	CONFIG_WAVPACK = n
+	CONFIG_WAV = n
+	CONFIG_MP4 = n
+	CONFIG_AAC = n
+	CONFIG_FFMPEG = n
+	CONFIG_CUE = y
+	CONFIG_ROAR = n
+	CONFIG_PULSE = y
+	CONFIG_ALSA = y
+	CONFIG_AO = n
+	CONFIG_ARTS = n
+	CONFIG_OSS = n
+	CONFIG_SUN = n
+	CONFIG_WAVEOUT = n
+\end{lstlisting}
+This meant \lstinline$sudo apt-get install$ on
+\begin{lstlisting}
+	libflac-dev
+	libvorbis-dev
+\end{lstlisting}
+
+I tried again the \lstinline$./configure CONFIG_ROAR=n && make install$ routine.
+It seemed to work again, this time though cmus couldn't add any of the files in my library which weren't FLAC or Ogg Vorbis files.
+After some more searching, I found out that this meant that cmus just couldn't recognize the file at all, i.e. I hadn't build support for any other files.
+So this meant some trial and error to find the right AAC package (it turned out to be \lstinline$libfaad-dev$), the right MP4 package (for those \lstinline$.m4a$ files and which was \lstinline$libmp4v2-dev$).
+I tried the uninstall-configure-make cycle again.
+Yay! Now I had AAC playback.
+
+Now time for MP3 and WMA files.
+After some searching it looked like these were both provided by ffmpeg and apparently \lstinline$libavcodec-dev$ wasn't enough.
+Unfortunately \href{http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html}{due to a split within the ffmpeg community into ffmpeg and libav}, Debian only has the libav files, while cmus relies on the ffmpeg library files.
+
+So I took a closer look at the cmus package to see its dependencies.
+Ah ha!
+There was a tricky little cmus-ffmpeg-plugin package there and sure enough, after download, there was a nice \lstinline$ffmpeg.so$ file I could drop into my working directory, change \lstinline$config.mk$ to have \lstinline$CONFIG_FFMPEG=y$ and be on my merry way.
+But the road to compilation is a long and tortuous one and this was not enough.
+Now all my MP3 files sounded like they had been blown full of helium and my WMA files were the same static mess as before.
+\emph{This meant that the original static problems with the cmus package in Debian were probably due to this \lstinline$ffmpeg.so$, which must be faulty in some way}.
+
+So I looked around some more and found a replacement MP3 plugin for cmus in the form of the MPEG Audio Decoder project (\lstinline$sudo apt-get install libmad0-dev$ in Debian).
+Installing this made my MP3's fine, but my WMA files still sounded like the voices of devilspawn.
+More searching didn't reveal any plugins that cmus used to play WMA files other than ffmpeg.
+So I looked closer at the source code of cmus.
+It turned out that in \lstinline$ffmpeg.c$, there was a header file \lstinline$swresample.h$ that wasn't present on my system.
+It was present in the Git repository of the ffmpeg project.
+However, whenever possible I prefer to do things through a package manager to have a central location for managing dependencies, so I tried to see if there was a Debian package that provided these library files.
+While Debian's main repositories didn't, luckily deb-multimedia did in the form of \lstinline$libswresample-dev$.
+
+And with that final last piece of the puzzle and one more uninstall-configure-make cycle, the long night of horribleness came to a close at 4 a.m. with finally a complete and functioning cmus build going.
+Pain and frustration make the music coming from my computer right now just sound all that much sweeter.
+
+\end{document}
