@@ -171,30 +171,6 @@ simpleRenderLink _   Nothing         = Nothing
 simpleRenderLink tag (Just filePath) =
   Just $ H.a ! A.href (toValue $ toUrl filePath) $ toHtml tag
 
--- Begin from http://www.rohanjain.in/hakyll-clean-urls/
-cleanHTMLRoute :: Routes
-cleanHTMLRoute = customRoute createIndexRoute
-  where
-    createIndexRoute ident = takeDirectory p </> takeBaseName p </> "index.html"
-                            where p = toFilePath ident
-
-cleanIndexUrls :: Item String -> Compiler (Item String)
-cleanIndexUrls = return . fmap (withUrls cleanIndex)
-
-cleanIndexHtmls :: Item String -> Compiler (Item String)
-cleanIndexHtmls = return . fmap (replaceAll pattern replacement)
-    where
-      pattern = "/index.html"
-      replacement = const "/"
-
-cleanIndex :: String -> String
-cleanIndex url
-    | idx `isSuffixOf` url = take (length url - length idx) url
-    | otherwise            = url
-  where idx = "index.html"
-
--- End from http://www.rohanjain.in/hakyll-clean-urls/
-
 feedConfig :: FeedConfiguration
 feedConfig = FeedConfiguration
     { feedTitle = "Shuang Rimu"
