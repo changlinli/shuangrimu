@@ -2,6 +2,16 @@
 title: Not Everything is a Function in Haskell
 cover-image: haskell_wallpaper.jpg
 author: Rimu Shuang
+attribution: 'Debian Logo: Software in the Public Interest, Inc. "The Debian Open Use Logo." 1999. Under a GNU Lesser General Public License (NOT a CC-BY 3.0 License).
+<br/>
+<br/>
+Screenshot: cmus Project. "Untitled." 2013. Under a GNU General Public License v3.0 (NOT a CC-BY 3.0 License).
+<br/>
+<br/>
+Logo + Screenshot: Shuang, Rimu. "Untitled." Mar 19, 2014. Under a GNU General Public License v3.0 (NOT a CC-BY 3.0 License).'
+subhead: A common misconception in Haskell is that everything is a function...
+tags: moving, django, hakyll
+date: 2014-01-23T21:32:00+0000
 ---
 
 A common misconception in Haskell is that everything is a function (a nice
