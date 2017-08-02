@@ -35,8 +35,13 @@ styling along the way.
 Running `site.hs` will generate a bunch of HTML, CSS, and Javascript output in
 the `_site` folder. This can then be served up by your choice of webserver.
 
-The development server used (`mighty`) is a production-ready webserver that can
-be used. Alternatively, I've included an 
-
 In my particular case I configure the web server to serve pages with the `.html`
-suffix as optional. That is of course a decision that is entirely up to you.
+suffix as optional (with a redirect as necessary). That is of course a decision
+that is entirely up to you.
+
+Misc Bugs (a.k.a. why htaccess is not .htaccess)
+------------------------------------------------
+
+For some reason Hakyll isn't able to match on files with a period as the first
+character. See
+[https://github.com/jaspervdj/hakyll/issues/560](https://github.com/jaspervdj/hakyll/issues/560).

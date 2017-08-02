@@ -20,9 +20,10 @@ import           Control.Monad
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
-    match ".htaccess" $ do
-        route   idRoute
+    match "htaccess" $ do
+        route   (constRoute ".htaccess")
         compile copyFileCompiler
+
     match "favicon.ico" $ do
         route   idRoute
         compile copyFileCompiler
