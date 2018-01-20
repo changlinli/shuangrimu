@@ -39,21 +39,17 @@ In effect you can think of Hakyll as a static site generator generator.
 
 > {-# LANGUAGE OverloadedStrings #-}
 > {-# LANGUAGE FlexibleContexts #-}
-> import           Data.Monoid (mappend, (<>), mconcat)
+> import           Data.Monoid (mappend, (<>))
 > import           Hakyll
 > import           Text.Blaze.Html5 (toHtml, toValue, (!))
-> import qualified Text.Blaze.Html5 as H
+> import qualified Text.Blaze.Html5 as Html
 > import qualified Text.Blaze.Html5.Attributes     as A
 > import           Text.Printf
-> import           Data.Bifoldable (bifoldMap)
-> import           System.FilePath
-> import           Data.List (isSuffixOf)
 > import           Data.Set (Set)
 > import qualified Data.Set as Set
 > import qualified Data.HashMap.Lazy as Map
 > import qualified Data.Aeson.Types as Aeson
-> import qualified Data.Aeson as Aeson
-> import           Data.Text (Text, splitOn, pack, strip, lines)
+> import           Data.Text (Text, pack, strip)
 > import qualified Data.Text as Text
 > import           Control.Monad
 > import           Control.Monad.Except
@@ -137,7 +133,7 @@ So how does this work?
 >             popularPosts <- (filterM (\post -> fmap (\x -> Set.member x mostPopularPostTitles) (getItemTitle (itemIdentifier post)))) =<< loadAllSnapshots "posts/*" "content"
 >             let indexCtx =
 >                     listField "popularPosts" postCtx (return popularPosts) <>
->                     listField "posts" postCtxWithIdx (return (zipWith (\post idx -> fmap (\postContents -> (postContents, idx)) post) posts (fmap show [1 .. 3]))) <>
+>                     listField "posts" postCtxWithIdx (return (zipWith (\post idx -> fmap (\postContents -> (postContents, idx)) post) posts (fmap show [1 :: Integer .. 3]))) <>
 >                     constField "title" "Home"                <>
 >                     tagsCtx tags                             <>
 >                     injectCustomColor  ""                    <>
@@ -200,7 +196,7 @@ This is for parsing
 > tagsFieldAsLIs :: String -> Tags -> Context a
 > tagsFieldAsLIs contextKey tags = listField contextKey defaultContext (return (collectTags tags))
 >   where
->     collectTags tags = map (\(t, _) -> Item (tagsMakeId tags t) t) (tagsMap tags)
+>     collectTags tagsToCollect = map (\(t, _) -> Item (tagsMakeId tagsToCollect t) t) (tagsMap tagsToCollect)
 > 
 > injectCustomColor :: String -> Context String
 > injectCustomColor = constField "headstyle" . colorSelection 
@@ -214,10 +210,10 @@ This is for parsing
 > toInterpolate :: (Int, Int, Int) -> String
 > toInterpolate (x, y, z) = printf "{color:rgb(%s, %s, %s); background-color:rgb(220, 220, 220)}" (show x) (show y) (show z)
 > 
-> simpleRenderLink :: String -> (Maybe FilePath) -> Maybe H.Html
+> simpleRenderLink :: String -> (Maybe FilePath) -> Maybe Html.Html
 > simpleRenderLink _   Nothing         = Nothing
 > simpleRenderLink tag (Just filePath) =
->   Just $ H.a ! A.href (toValue $ toUrl filePath) $ toHtml tag
+>   Just $ Html.a ! A.href (toValue $ toUrl filePath) $ toHtml tag
 > 
 > feedConfig :: FeedConfiguration
 > feedConfig = FeedConfiguration
