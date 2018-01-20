@@ -72,8 +72,7 @@ that I messed something up in translation).
 
 > hi
 >
-> Senior year of high school, I worked for my school’s technologyAs a project to get myself with Haskell, I've been working on implementing a
-commandline version of Tic-Tac-Toe along with a minimax AI to play with.
+> Senior year of high school, I worked for my school’s technology
 > department, fixing computer and network problems throughout the
 > school. The office I worked in had a supply closet stockpiled with
 > computers, RAM, hard drives, monitors, cables, and any other computer
