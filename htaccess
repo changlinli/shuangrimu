@@ -1,11 +1,17 @@
-Redirect 301 /26 /ghcjs-is-amazing.html
-Redirect 301 /25 /compiling-cmus.html
-Redirect 301 /24 /implement-tictactoe-in-haskell.html
-Redirect 301 /23 /mit-admissions-blogs.html
-Redirect 301 /22 /not-everything-is-a-function-in-haskell.html
-
 RewriteEngine On
+
+RewriteRule 26 /posts/ghcjs-is-amazing.html [R=301,L]
+RewriteRule 25 /posts/compiling-cmus.html [R=301,L]
+RewriteRule 24 /posts/implement-tictactoe-in-haskell.html [R=301,L]
+RewriteRule 23 /posts/mits-admissions-blogs.html [R=301,L]
+RewriteRule 22 /posts/not-everything-is-a-function-in-haskell.html [R=301,L]
+RewriteRule 21 /posts/transfinite-induction.html [R=301,L]
+RewriteRule 20 /posts/uniform-computability.html [R=301,L]
+RewriteRule 19 /posts/smbc-and-2-plus-2.html [R=301,L]
+RewriteRule 18 /posts/the-continuum-hypothesis-part-2.html [R=301,L]
+
 RewriteCond %{REQUEST_URI} !\.[a-zA-Z0-9]{1,}
 RewriteCond %{REQUEST_URI} !/$
+
 RewriteRule ^(.*)$ %{REQUEST_URI}.html [R=301,L]
 
