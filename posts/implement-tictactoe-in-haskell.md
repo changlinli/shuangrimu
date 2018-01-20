@@ -12,8 +12,8 @@ tags: haskell
 As a project to get myself with Haskell, I've been working on implementing a
 commandline version of Tic-Tac-Toe along with a minimax AI to play with. I've
 finished that and it's available at
-[https://github.com/changlinli/tictactoe-haskell](https://github.com/changlinli/tictactoe-haskell
-"Haskell Tic-Tac-Toe").
+[https://github.com/changlinli/tictactoe-haskell](
+https://github.com/changlinli/tictactoe-haskell "Haskell Tic-Tac-Toe").
 
 Along the way I used a little bit of the Haskell `test-framework` package to
 automate my unit tests and quickCheck tests. Unfortunately, I complete skipped
