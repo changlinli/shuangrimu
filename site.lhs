@@ -1,7 +1,32 @@
 Shuangrimu Static Site Generator
 ================================
 
-What is Hakyll? Unlike, say Jekyll, Hakyll is not a static site generator
+Welcome to the source code of [www.shuangrimu.com](www.shuangrimu.com)!
+
+This file is a literate Haskell file, that is it is the literal code from which
+this site is compiled (or at least the static site generator parts of it). For
+a higher-level overview of this entire project, see the README that should be
+bundled with this code. The documentation in this file will deal mainly with
+the details of this site generates the static HTML files that we push.
+
+This also serves as a bit of a Hakyll tutorial for people who are unfamiliar
+with it.
+
+I assume an intermediate level knowledge of Haskell and that you have gone 
+through at least the basic tutorial of Hakyll 
+[https://jaspervdj.be/hakyll/tutorials.html](https://jaspervdj.be/hakyll/tutorials.html "Hakyll basic tutorial").
+
+Design
+------
+
+At a high level every static site generator follows the same workflow.
+
+1. Read in a bunch of content (often written in Markdown)
+2. Apply a series of templates to it
+3. Collate all the results as some set of HTML/CSS/JS files that can be
+   immediately served by any static file webserver.
+
+So what is Hakyll? Unlike, say Jekyll, Hakyll is not a static site generator
 itself per se. It is better thought of as a toolbox for creating your own
 static site generator that best suits your needs.
 
@@ -16,7 +41,7 @@ In effect you can think of Hakyll as a static site generator generator.
 > {-# LANGUAGE FlexibleContexts #-}
 > import           Data.Monoid (mappend, (<>), mconcat)
 > import           Hakyll
-> import           Text.Blaze.Html5                (toHtml, toValue, (!))
+> import           Text.Blaze.Html5 (toHtml, toValue, (!))
 > import qualified Text.Blaze.Html5 as H
 > import qualified Text.Blaze.Html5.Attributes     as A
 > import           Text.Printf
@@ -32,7 +57,6 @@ In effect you can think of Hakyll as a static site generator generator.
 > import qualified Data.Text as Text
 > import           Control.Monad
 > import           Control.Monad.Except
-> import           Debug.Trace
 
 So how does this work?
 
@@ -144,7 +168,7 @@ So how does this work?
 This is for parsing
 
 > parsePopularPostTitles :: (MonadError [String] m) => Text -> m (Set Text)
-> parsePopularPostTitles titles = traceShow titles $ return $ Set.fromList $ fmap strip $ Text.lines titles
+> parsePopularPostTitles titles = return $ Set.fromList $ fmap strip $ Text.lines titles
 > 
 > createBasePage :: Pattern -> String -> Context String -> Rules ()
 > createBasePage sourcefile colortagname generatedTagsCtx =
