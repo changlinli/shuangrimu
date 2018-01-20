@@ -9,7 +9,7 @@ license:             GPL-3
 license-file:        LICENSE
 
 executable site
-  main-is:          site.hs
+  main-is:          site.lhs
   build-depends:    base == 4.*
                   , hakyll >= 4.7 && <= 4.9
                   , blaze-html >= 0.7 && <= 0.9

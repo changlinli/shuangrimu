@@ -32,7 +32,7 @@ compiler that compiles a bunch of blog posts written in Markdown or whatever
 other input language Pandoc accepts and converts it out to HTML with custom
 styling along the way.
 
-Running `site.hs` will generate a bunch of HTML, CSS, and Javascript output in
+Running `site.lhs` will generate a bunch of HTML, CSS, and Javascript output in
 the `_site` folder. This can then be served up by your choice of webserver.
 
 In my particular case I configure the web server to serve pages with the `.html`
