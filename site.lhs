@@ -13,6 +13,7 @@ located, what the format of the markdown file should be, etc.
 In effect you can think of Hakyll as a static site generator generator.
 
 > {-# LANGUAGE OverloadedStrings #-}
+> {-# LANGUAGE FlexibleContexts #-}
 > import           Data.Monoid (mappend, (<>), mconcat)
 > import           Hakyll
 > import           Text.Blaze.Html5                (toHtml, toValue, (!))
@@ -27,8 +28,11 @@ In effect you can think of Hakyll as a static site generator generator.
 > import qualified Data.HashMap.Lazy as Map
 > import qualified Data.Aeson.Types as Aeson
 > import qualified Data.Aeson as Aeson
-> import           Data.Text (Text)
+> import           Data.Text (Text, splitOn, pack, strip, lines)
+> import qualified Data.Text as Text
 > import           Control.Monad
+> import           Control.Monad.Except
+> import           Debug.Trace
 
 So how does this work?
 
@@ -95,10 +99,16 @@ So how does this work?
 >     createFeed ["atom.xml"] renderAtom
 > 
 >     createFeed ["rss.xml"] renderRss
+>
+>     match "popular-posts" $ do
+>         compile $ getResourceBody >>= saveSnapshot "popular-posts"
 > 
 >     match "index.html" $ do
 >         route idRoute
 >         compile $ do
+>             listOfPopularPostsStr <- (loadBody "popular-posts" :: Compiler String)
+>             let listOfPopularPosts = pack listOfPopularPostsStr
+>             mostPopularPostTitles <- parsePopularPostTitles listOfPopularPosts
 >             posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
 >             popularPosts <- (filterM (\post -> fmap (\x -> Set.member x mostPopularPostTitles) (getItemTitle (itemIdentifier post)))) =<< loadAllSnapshots "posts/*" "content"
 >             let indexCtx =
@@ -130,12 +140,11 @@ So how does this work?
 >                 >>= relativizeUrls
 > 
 >     match "templates/*" $ compile templateCompiler
-> 
-> 
-> --------------------------------------------------------------------------------
-> 
-> mostPopularPostTitles :: Set Text
-> mostPopularPostTitles = Set.fromList [ "cmus Problems on Debian", "Moving to a Static Site" ]
+
+This is for parsing
+
+> parsePopularPostTitles :: (MonadError [String] m) => Text -> m (Set Text)
+> parsePopularPostTitles titles = traceShow titles $ return $ Set.fromList $ fmap strip $ Text.lines titles
 > 
 > createBasePage :: Pattern -> String -> Context String -> Rules ()
 > createBasePage sourcefile colortagname generatedTagsCtx =
