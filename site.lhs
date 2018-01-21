@@ -49,10 +49,12 @@ In effect you can think of Hakyll as a static site generator generator.
 > import qualified Data.Set as Set
 > import qualified Data.HashMap.Lazy as Map
 > import qualified Data.Aeson.Types as Aeson
-> import           Data.Text (Text, pack, strip)
+> import           Data.Text (Text, pack, strip, unpack)
 > import qualified Data.Text as Text
 > import           Control.Monad
 > import           Control.Monad.Except
+> import           Data.Typeable
+> import           Text.Pandoc (writeMarkdown, Pandoc, runPure, writeLaTeX)
 
 So how does this work?
 
@@ -101,11 +103,29 @@ So how does this work?
 >             >>= loadAndApplyTemplate "templates/post.html"    (tagsField "tags" tags <> injectCustomColor "" <> postCtx)
 >             >>= loadAndApplyTemplate "templates/default.html" postCtxWithTags
 >             >>= relativizeUrls
+>
+>     let pandoced = getResourceBody >>= readPandoc
+>
+>     let writeThroughItemMd (Item itemId body) = case runPure $ fmap unpack $ writeMarkdown defaultHakyllWriterOptions body of
+>             Left err -> error $ "blahblah" ++ show err
+>             Right item' -> Item itemId item'
+>
+>     let writeThroughItemTex (Item itemId body) = case runPure $ fmap unpack $ writeLaTeX defaultHakyllWriterOptions body of
+>             Left err -> error $ "blahblah" ++ show err
+>             Right item' -> Item itemId item'
+>
+>     match "posts/*" $ version "markdown" $ do
+>         route $ setExtension "md"
+>         compile $ fmap writeThroughItemMd pandoced
+>
+>     match "posts/*" $ version "latex" $ do
+>         route $ setExtension "tex"
+>         compile $ fmap writeThroughItemTex pandoced
 > 
 >     create ["archives.html"] $ do
 >         route idRoute
 >         compile $ do
->             posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
+>             posts <- recentFirst =<< loadAllSnapshotsNoVersion "posts/*" "content"
 >             let archiveCtx =
 >                     listField "posts" postCtx (return posts) <>
 >                     constField "title" "Archives"            <>
@@ -131,8 +151,8 @@ So how does this work?
 >             listOfPopularPostsStr <- (loadBody "popular-posts" :: Compiler String)
 >             let listOfPopularPosts = pack listOfPopularPostsStr
 >             mostPopularPostTitles <- parsePopularPostTitles listOfPopularPosts
->             posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
->             popularPosts <- (filterM (\post -> fmap (\x -> Set.member x mostPopularPostTitles) (getItemTitle (itemIdentifier post)))) =<< loadAllSnapshots "posts/*" "content"
+>             posts <- recentFirst =<< loadAllSnapshotsNoVersion "posts/*" "content"
+>             popularPosts <- (filterM (\post -> fmap (\x -> Set.member x mostPopularPostTitles) (getItemTitle (itemIdentifier post)))) =<< loadAllSnapshotsNoVersion "posts/*" "content"
 >             let indexCtx =
 >                     listField "popularPosts" postCtx (return popularPosts) <>
 >                     listField "posts" postCtxWithIdx (return (zipWith (\post idx -> fmap (\postContents -> (postContents, idx)) post) posts (fmap show [1 :: Integer .. 3]))) <>
@@ -162,6 +182,8 @@ So how does this work?
 >                 >>= relativizeUrls
 > 
 >     match "templates/*" $ compile templateCompiler
+>
+> loadAllSnapshotsNoVersion pattern = loadAllSnapshots (pattern .&&. hasNoVersion)
 
 This is for parsing
 
@@ -246,7 +268,7 @@ This is for parsing
 >     compile $ do
 >         let feedCtx = postCtx <> bodyField "description"
 >         posts <- fmap (take 10) . recentFirst =<<
->             loadAllSnapshots "posts/*" "content"
+>             loadAllSnapshotsNoVersion "posts/*" "content"
 >         renderer feedConfig feedCtx posts
 > 
 > getItemTitle :: MonadMetadata m => Identifier -> m Text
