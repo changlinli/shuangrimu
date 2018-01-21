@@ -1,3 +1,5 @@
+ErrorDocument 404 /404.html
+
 RewriteEngine On
 
 RewriteRule ^26/?$ /posts/ghcjs-is-amazing.html [R=301,L]

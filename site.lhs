@@ -91,6 +91,8 @@ So how does this work?
 >     createBasePage "contact.md" "#contact" (tagsCtx tags)
 > 
 >     createBasePage "licensing.md" "#licensing" (tagsCtx tags)
+>
+>     createBasePageNonRelative "404.md" "" (tagsCtx tags)
 > 
 >     match "posts/*" $ do
 >         route $ setExtension "html"
@@ -174,6 +176,14 @@ This is for parsing
 >             pandocCompiler
 >                 >>= loadAndApplyTemplate "templates/default.html" (injectCustomColor colortagname <> generatedTagsCtx <> defaultContext)
 >                 >>= relativizeUrls
+>
+> createBasePageNonRelative :: Pattern -> String -> Context String -> Rules ()
+> createBasePageNonRelative sourcefile colortagname generatedTagsCtx =
+>     match sourcefile $ do
+>         route   $ setExtension "html"
+>         compile $ do 
+>             pandocCompiler
+>                 >>= loadAndApplyTemplate "templates/default.html" (injectCustomColor colortagname <> generatedTagsCtx <> defaultContext)
 > 
 > postCtx :: Context String
 > postCtx =
