@@ -11,7 +11,7 @@ Screenshot: cmus Project. "Untitled." 2013. Under a GNU General Public License v
 Logo + Screenshot: Shuang, Rimu. "Untitled." Mar 19, 2014. Under a GNU General Public License v3.0 (NOT a CC-BY 3.0 License).'
 subhead: A common misconception in Haskell is that everything is a function...
 tags: moving, django, hakyll
-date: 2014-01-23T21:32:00+0000
+date: 2014-01-23T21:32:00-0500
 ---
 
 A common misconception in Haskell is that everything is a function (a nice

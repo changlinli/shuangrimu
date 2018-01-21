@@ -1,11 +1,11 @@
 ---
 title: Implement Tic-Tac-Toe in Haskell
-cover-image: tictactoe_cereal.JPG
+cover-image: tictactoe_cereal.svg
 attribution: Rimu Shuang. "Untitled Photo". Feb 5, 2014. Under a Creative Commons 3.0 Attribution License.
 subhead: "As a project to get myself with Haskell, I've been working on implementing a
 commandline version of Tic-Tac-Toe along with a minimax AI to play with."
 author: Rimu Shuang
-date: 2014-02-05T01:27:03+0000
+date: 2014-02-05T01:27:03-0500
 tags: haskell
 ---
 

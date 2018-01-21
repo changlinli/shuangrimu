@@ -9,7 +9,7 @@ Latex"</a>.'
 subhead: "If you're looking for a Haskell to JS compiler, GHCJS is gloriously
 close to becoming a one-stop-shop."
 tags: haskell
-date: 2015-01-04T18:16:56+0000
+date: 2015-01-04T18:16:56-0500
 ---
 
 Over the weekend I finally decided to take the jump and install the 2014 Haskell

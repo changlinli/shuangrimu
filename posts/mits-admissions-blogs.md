@@ -9,7 +9,7 @@ License</a> (NOT a CC-BY 3.0 License).'
 subhead: "MIT’s admissions blog has been having a bunch of interesting blog posts
 up lately, either in a foreign language or in some sort of code."
 tags: mit, python
-date: 2014-01-25T02:00:18+0000
+date: 2014-01-25T02:00:18-0500
 ---
 
 MIT’s admissions blog has been having a bunch of interesting blog posts

@@ -1,11 +1,11 @@
 ---
 title: Moving to a Static Site
-cover-image: big_globe.jpg
+cover-image: big_globe.svg
 author: Rimu Shuang
-attribution: Ronald Yang. <a href="https://unsplash.com/?photo=xagqOinFSu4">"Untitled Photo".</a> June 12, 2015. Under a Creative Commons 1.0 Universal (Public Domain Dedication) License (NOT a CC-BY 4.0 License).
+attribution: Ronald Yang. <a href="https://unsplash.com/?photo=xagqOinFSu4">"Untitled Photo".</a> June 12, 2015. Under a Creative Commons 1.0 Universal (Public Domain Dedication) License (NOT a CC-BY 4.0 License). Post-processed by Rimu Shuang.
 subhead: Moved this site from Django to Hakyll. Reasons were mainly reproducibility, security, and just curiosity.
 tags: moving, django, hakyll
-date: 2016-11-13T07:22:00+0000
+date: 2016-11-13T07:22:00-0500
 ---
 
 I've moved to a static site (specifically from
