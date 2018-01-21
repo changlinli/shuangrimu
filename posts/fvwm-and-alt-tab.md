@@ -9,7 +9,7 @@ at "Ubuntu 13.04 Raring Ringtail" under CC-BY-SA v3.0 and the FVWM logo from
 Wikipedia at http://commons.wikimedia.org/wiki/File:Fvwm-logo.svg under CC-BY-SA
 v3.0.'
 subhead: Making Alt-Tab in FVWM act like other window manager's Alt-Tab
-tags: fvwm
+tags: fvwm, FVWM
 date: 2013-05-19T15:48:06-0500
 ---
 
