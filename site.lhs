@@ -15,6 +15,7 @@ with it.
 I assume an intermediate level knowledge of Haskell and that you have gone 
 through at least the basic tutorial of Hakyll 
 [https://jaspervdj.be/hakyll/tutorials.html](https://jaspervdj.be/hakyll/tutorials.html "Hakyll basic tutorial").
+Essentially you should've seen a "Hello World" example of Hakyll already.
 
 Design
 ------
@@ -35,7 +36,16 @@ based on Pandoc. Usually you will end up creating a compiler from Markdown to
 HTML that has a lot of conventions around where files are supposed to be
 located, what the format of the markdown file should be, etc.
 
-In effect you can think of Hakyll as a static site generator generator.
+In effect you can think of Hakyll as a static site generator generator. You use
+it to create an executable (or you can interpret it with `runhaskell`) which is
+then your own personal static site generator that you can run.
+
+Let's start with some `import` boilerplate and then dive into what Hakyll gives
+us that we wouldn't get if we just tried to build everything from scratch
+ourselves.
+
+Actual Code
+-----------
 
 > {-# LANGUAGE OverloadedStrings #-}
 > {-# LANGUAGE FlexibleContexts #-}
@@ -56,7 +66,35 @@ In effect you can think of Hakyll as a static site generator generator.
 > import           Data.Typeable
 > import           Text.Pandoc (writeMarkdown, Pandoc, runPure, writeLaTeX)
 
-So how does this work?
+If we think back to the steps laid out in the Design section, Hakyll provides
+the first step, the ability to read in content, through the `match` function.
+
+The reason why a custom function is provided, rather than simply using
+something like `readFile` is that Hakyll provides its own custom monad, the
+`Rules` monad, in which all these actions live. By providing a custom monad
+rather than simply using `IO`, Hakyll is able to offer some features to make
+life easier. Foremost among them is incremental compilation and a preview
+server that can automatically pick up on changes and compile them. This is
+because under the hood the `Rules` monad is storing the dependencies among your
+files of which files depend on which other ones in order to work.
+
+However, this design choice, to access content via `match`, has other
+consequences for how to design a program with Hakyll that might seem
+unintuitive at first.
+
+Let's dive into the easiest example of using `match`.
+
+> compileHtAccessFile :: Rules () 
+> compileHtAccessFile =
+>     match "htaccess" $ do
+>         route   (constRoute ".htaccess")
+>         compile copyFileCompiler
+
+This generates a rule that reads in a file named `htaccess` and then places it
+in some build artifact folder (by default this is `_site` under the name
+`.htaccess`). The lack of a period in the first argument of the `match` is
+because by default Hakyll ignores files starting with a period (this can be
+changed in its configuration settings).
 
 > main :: IO ()
 > main = hakyll $ do
