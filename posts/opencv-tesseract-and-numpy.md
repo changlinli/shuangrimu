@@ -7,7 +7,7 @@ http://www.flickr.com/photos/dotdoubledot/379374457/sizes/o/. Under a Creative
 Commons License BY-NC-SA v2.0
 (http://creativecommons.org/licenses/by-nc-sa/2.0/).'
 subhead: A tale of debugging Single-Segment Buffer Object Errors
-tags: fvwm
+tags: opencv
 date: 2013-02-10T04:20:08-0500
 ---
 
