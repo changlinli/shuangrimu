@@ -39,6 +39,14 @@ In my particular case I configure the web server to serve pages with the `.html`
 suffix as optional (with a redirect as necessary). That is of course a decision
 that is entirely up to you.
 
+Writing new posts
+-----------------
+
+Any new post is a markdown file that goes in the `posts` directory. I also have
+a `drafts` directory for drafts I'm not quite ready to publish yet, but that's
+purely a convention (since any folder that is not `posts` gets ignored, I could
+have used another name such as `notposts`).
+
 Misc Bugs (a.k.a. why htaccess is not .htaccess)
 ------------------------------------------------
 
