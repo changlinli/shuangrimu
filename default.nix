@@ -5,7 +5,7 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, base, bifunctors, blaze-html, filepath
-      , hakyll, stdenv
+      , hakyll, stdenv, primitive
       }:
       mkDerivation {
         pname = "shuangrimu";
