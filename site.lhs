@@ -40,6 +40,11 @@ In effect you can think of Hakyll as a static site generator generator. You use
 it to create an executable (or you can interpret it with `runhaskell`) which is
 then your own personal static site generator that you can run.
 
+*Ultimately what we're building here is a compiler that takes everything in
+this repository and generates a bunch of HTML, Javascript, and CSS in the
+`_site` directory which we can deploy with any webserver capable of serving
+static files.*
+
 Let's start with some `import` boilerplate and then dive into what Hakyll gives
 us that we wouldn't get if we just tried to build everything from scratch
 ourselves.
@@ -96,43 +101,78 @@ in some build artifact folder (by default this is `_site` under the name
 because by default Hakyll ignores files starting with a period (this can be
 changed in its configuration settings).
 
-> main :: IO ()
-> main = hakyll $ do
->     match "htaccess" $ do
->         route   (constRoute ".htaccess")
->         compile copyFileCompiler
-> 
+A lot of other actions we need to do are to simply copy files that already
+exist into `_site`.
+
+> copyFavicon :: Rules ()
+> copyFavicon = 
 >     match "favicon.ico" $ do
 >         route   idRoute
 >         compile copyFileCompiler
-> 
+>
+> copyImages :: Rules ()
+> copyImages =
 >     match "images/*" $ do
 >         route   idRoute
 >         compile copyFileCompiler
-> 
+>
+> copyCustomJavascript :: Rules ()
+> copyCustomJavascript =
 >     match "js/*" $ do
 >         route   idRoute
 >         compile copyFileCompiler
-> 
+>
+> copyPrettifyJsLibrary :: Rules ()
+> copyPrettifyJsLibrary =
 >     match "prettify/*" $ do
 >         route   idRoute
 >         compile copyFileCompiler
-> 
+
+We also can compress our CSS to make it more lightweight.
+
+> compileCss :: Rules ()
+> compileCss =
 >     match "css/*" $ do
 >         route   idRoute
 >         compile compressCssCompiler
+
+Now we get to meat of things, which is actually turning our posts into properly
+formatted HTML.
+
+Let's first specify where the folder with all our Markdown posts is.
+
+> locationOfPosts :: Pattern
+> locationOfPosts = "posts/*"
+
+Next we need to build tags which are then used later to create a sidebar with
+tags in all of our pages.
+
+> buildTagsFromPosts = buildTags locationOfPosts (fromCapture "tags/*.html")
+
+> createAboutPage tags = createBasePage "about.md" "#about" (tagsCtx tags)
+> createContactPage tags = createBasePage "contact.md" "#contact" (tagsCtx tags)
+> createLicensingPage tags = createBasePage "licensing.md" "#licensing" (tagsCtx tags)
+> create404Page tags = createBasePageNonRelative "404.md" "" (tagsCtx tags)
+
+> main :: IO ()
+> main = hakyll $ do
+>     compileHtAccessFile
+>
+>     copyFavicon
+>     copyImages
+>     copyCustomJavascript
+>     copyPrettifyJsLibrary
+>
+>     compileCss
 > 
->     tags <- buildTags "posts/*" (fromCapture "tags/*.html")
+>     tags <- buildTagsFromPosts
 > 
 >     let postCtxWithTags = injectCustomColor "" <> tagsCtx tags <> postCtx
 > 
->     createBasePage "about.md" "#about" (tagsCtx tags)
-> 
->     createBasePage "contact.md" "#contact" (tagsCtx tags)
-> 
->     createBasePage "licensing.md" "#licensing" (tagsCtx tags)
->
->     createBasePageNonRelative "404.md" "" (tagsCtx tags)
+>     createAboutPage tags
+>     createContactPage tags
+>     createLicensingPage tags
+>     create404Page tags
 > 
 >     match "posts/*" $ do
 >         route $ setExtension "html"
