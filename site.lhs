@@ -87,7 +87,16 @@ However, this design choice, to access content via `match`, has other
 consequences for how to design a program with Hakyll that might seem
 unintuitive at first.
 
-Let's dive into the easiest example of using `match`.
+Another way of thinking about this is that We are basically building a
+dependency graph with `Rules` of actions to execute. `match` allows us to
+associate parts of that graph with other parts of our dependency graph. (This
+paragraph needs to be rewritten, it's not particularly clear)
+
+Let's dive into the easiest example of using `match`. Most uses of `match` will
+follow this pattern, where pass to `match` a `route`, which indicates where in
+our `_site` folder our final product will be and a "compiler", which indicates
+what transformation we will be doing on top of the file to generate the
+artifact that goes into the `_site` folder.
 
 > compileHtAccessFile :: Rules () 
 > compileHtAccessFile =
@@ -95,13 +104,17 @@ Let's dive into the easiest example of using `match`.
 >         route   (constRoute ".htaccess")
 >         compile copyFileCompiler
 
+In this case since we have a single file, we're going to use `constRoute` to
+indicate the artifact's name in `_site` should always be the same. We also are
+copying the file entirely unchanged so we just the `copyFileCompiler`.
+
 This generates a rule that reads in a file named `htaccess` and then places it
 in some build artifact folder (by default this is `_site` under the name
 `.htaccess`). The lack of a period in the first argument of the `match` is
 because by default Hakyll ignores files starting with a period (this can be
 changed in its configuration settings).
 
-A lot of other actions we need to do are to simply copy files that already
+A lot of other actions we need to do also are to simply copy files that already
 exist into `_site`.
 
 > copyFavicon :: Rules ()
@@ -144,6 +157,9 @@ Let's first specify where the folder with all our Markdown posts is.
 > locationOfPosts :: Pattern
 > locationOfPosts = "posts/*"
 
+Notice the asterisk, which indicates we want to match against all files in the
+`posts` folder.
+
 Next we need to build tags which are then used later to create a sidebar with
 tags in all of our pages.
 
@@ -153,6 +169,11 @@ tags in all of our pages.
 > createContactPage tags = createBasePage "contact.md" "#contact" (tagsCtx tags)
 > createLicensingPage tags = createBasePage "licensing.md" "#licensing" (tagsCtx tags)
 > create404Page tags = createBasePageNonRelative "404.md" "" (tagsCtx tags)
+
+As an added bit of cuteness we can create an HTML page out of this very file
+itself (since it's valid Markdown after all)!
+
+> createSiteCodePage tags = createBasePage "site.lhs" "" (tagsCtx tags)
 
 > main :: IO ()
 > main = hakyll $ do
@@ -173,6 +194,7 @@ tags in all of our pages.
 >     createContactPage tags
 >     createLicensingPage tags
 >     create404Page tags
+>     createSiteCodePage tags
 > 
 >     match "posts/*" $ do
 >         route $ setExtension "html"
