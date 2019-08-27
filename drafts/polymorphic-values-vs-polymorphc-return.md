@@ -9,4 +9,4 @@ tags: haskell
 date: 2018-04-02T01:39:00-0500
 ---
 
-This is 
+We often talk about how polymorphic values are supposed to be
