@@ -17,7 +17,7 @@ datatypes look like if you didn't have them built into a language?"
 This entire post is a literate Haskell file so if you'd like to load the code
 simply append a `.md` to the URL and load the resulting file into GHCi.
 
-> {-# LANGUAGE RankNTypes, GADTs #-}
+> {-# LANGUAGE RankNTypes, GADTs, DeriveFunctor, TypeApplications #-}
 > import Data.Char (ord)
 
 Let's begin with the standard way of defining an ADT, that is with a
@@ -211,7 +211,7 @@ which is what we get with careless recursion.
 
 < -- Doesn't work
 < -- Error: Cycle in type synonym declarations
-< type NaturalNum1 = forall a. a -> NaturalNum1 -> a
+< type NaturalNum1 = forall a. a -> (NaturalNum1 -> a) -> a
 
 Instead if we guard it behind a `newtype`, we don't get infinite expansion of
 our type and have only one level of recursion.
@@ -478,38 +478,54 @@ So we've demonstrated we can use fixed points to remove the recursion in
 `NaturalNum0` with `NaturalNum2`.
 
 What about the recursion at the type level we see with `NaturalNum1`?
+We can do the same thing by first pulling out the type variable as we do with
+`NaturalNum3`! 
 
-> type NaturalNum3 = forall a. a -> (a -> a) -> a
+> type NaturalNum3 b = forall a. a -> (b -> a) -> a
 
-> zero3 :: NaturalNum3
+However, it turns out that `FindFixedPoint` gives us a fixed point that is not
+all that beautiful. There's another fixed point combinator that can lead us to
+a slightly more ergonomic fixed point of `NaturalNum2`.
+
+> data FindFixedPoint0 f = FindFixedPoint0 (forall a. (f a -> a) -> a)
+> data FindFixedPoint1 f = FindFixedPoint1 (forall a. (f a -> a) -> a)
+
+> injection :: Functor f => f (FindFixedPoint0 f) -> FindFixedPoint0 f
+> injection fApplied = _
+>   where
+>     blah = (\f -> f fApplied)
+
+> type NaturalNum4 = forall a. a -> (a -> a) -> a
+
+> zero3 :: NaturalNum4
 > zero3 = \z _ -> z
 
-> one3 :: NaturalNum3
+> one3 :: NaturalNum4
 > one3 = \z s -> s z
 
-> two3 :: NaturalNum3
+> two3 :: NaturalNum4
 > two3 = \z s -> s (s z)
 
-> successor3 :: NaturalNum3 -> NaturalNum3
+> successor3 :: NaturalNum4 -> NaturalNum4
 > successor3 n = \z s -> s (n z s)
 
-> naturalNum3ToInt :: NaturalNum3 -> Int
+> naturalNum3ToInt :: NaturalNum4 -> Int
 > naturalNum3ToInt f = f 0 (+ 1)
 
-> naturalNum1ToNaturalNum3 :: NaturalNum1 -> NaturalNum3
-> naturalNum1ToNaturalNum3 (NaturalNum1 n) = n (\z s -> z) (\m -> \z s -> s (naturalNum1ToNaturalNum3 m z s))
+> naturalNum1ToNaturalNum4 :: NaturalNum1 -> NaturalNum4
+> naturalNum1ToNaturalNum4 (NaturalNum1 n) = n (\z s -> z) (\m -> \z s -> s (naturalNum1ToNaturalNum4 m z s))
 
 > successor1 :: NaturalNum1 -> NaturalNum1
 > successor1 f = NaturalNum1 (\_ s -> s f)
 
-> naturalNum3ToNaturalNum1 :: NaturalNum3 -> NaturalNum1
+> naturalNum3ToNaturalNum1 :: NaturalNum4 -> NaturalNum1
 > naturalNum3ToNaturalNum1 f = f (NaturalNum1 (\z _ -> z)) successor1
 
 > twoInt :: Int
 > twoInt = naturalNum1ToInt (naturalNum3ToNaturalNum1 two3)
 
 > twoInt' :: Int
-> twoInt' = naturalNum3ToInt (naturalNum1ToNaturalNum3 two1)
+> twoInt' = naturalNum3ToInt (naturalNum1ToNaturalNum4 two1)
 
 > fixedPoint :: NaturalNum2 (FindFixedPoint NaturalNum2) -> FindFixedPoint NaturalNum2
 > fixedPoint n = FixedPoint n
@@ -518,7 +534,7 @@ What about the recursion at the type level we see with `NaturalNum1`?
 > fixedPointInverse (FixedPoint n) = n
 
 > newtype Nat = Nat { unNat :: forall a. a -> (a -> a) -> a }
-> data NatF a = NatF (forall x. x -> (a -> x) -> x)
+> data NatF a = NatF (forall x. x -> (a -> x) -> x) deriving Functor
 
 > fixedPoint' :: FindFixedPoint NatF -> NaturalNum1
 > fixedPoint' (FixedPoint (NatF n)) = NaturalNum1 (\z s -> n z (\y -> s (fixedPoint' y)))
@@ -526,10 +542,52 @@ What about the recursion at the type level we see with `NaturalNum1`?
 > fixedPoint'' :: FindFixedPoint NatF -> NatF (FindFixedPoint NatF)
 > fixedPoint'' (FixedPoint n) = n
 
-> fixedPoint''' :: NatF Nat -> Nat
-> fixedPoint''' (NatF n) = Nat (\z s -> n z (\y -> _))
+> successorNat :: Nat -> Nat
+> successorNat (Nat f) = Nat $ \z s -> s (f z s)
 
-> ifZero :: NaturalNum3 -> Bool
+> zeroNat :: Nat
+> zeroNat = Nat (\z _ -> z)
+
+> fixedPoint''' :: NaturalNum2 Nat -> Nat
+> fixedPoint''' Zero2 = zeroNat
+> fixedPoint''' (Successor2 n) = successorNat n
+
+> fixedPoint'''' :: NatF Nat -> Nat
+> fixedPoint'''' (NatF n) = n zeroNat successorNat
+
+> zeroNatF :: NatF a
+> zeroNatF = NatF (\z _ -> z)
+
+> successorNatF :: a -> NatF a
+> successorNatF a = NatF (\z s -> s a)
+
+> fixedPointBlah :: NaturalNum0 -> NaturalNum2 NaturalNum0
+> fixedPointBlah Zero = Zero2
+> fixedPointBlah (Successor m) = Successor2 m
+
+> fixedPointBlahBlah :: NaturalNum0 -> NatF NaturalNum0
+> fixedPointBlahBlah Zero = NatF (\z s -> z)
+> fixedPointBlahBlah (Successor m) = NatF (\z s -> s m)
+
+> fixedPointBlahBlah' :: NaturalNum1 -> NatF NaturalNum1
+> fixedPointBlahBlah' (NaturalNum1 n) = NatF (\z s -> n z s)
+
+> natToNaturalNum0 :: Nat -> NaturalNum0
+> natToNaturalNum0 (Nat n) = n Zero Successor
+
+> naturalNum0ToNat :: NaturalNum0 -> Nat
+> naturalNum0ToNat Zero = Nat (\z s -> z)
+> naturalNum0ToNat (Successor m) = Nat (\z s -> s (unNat (naturalNum0ToNat m) z s))
+
+> fixedPointBlahBlahBlah :: Nat -> NatF Nat
+> fixedPointBlahBlahBlah n = fmap naturalNum0ToNat natFNat0
+>   where 
+>     natFNat0 :: NatF NaturalNum0
+>     natFNat0 = case (natToNaturalNum0 n) of
+>         Zero -> zeroNatF
+>         Successor m -> successorNatF m
+
+> ifZero :: NaturalNum4 -> Bool
 > ifZero n = n True (\_ -> False)
 
 > ifOne :: NaturalNum0 -> Bool
@@ -539,12 +597,15 @@ What about the recursion at the type level we see with `NaturalNum1`?
 >         Zero -> True
 >         Successor _ -> False
 
-> naturalNum0ToNaturalNum3 :: NaturalNum0 -> NaturalNum3
-> naturalNum0ToNaturalNum3 Zero = \z s -> z
-> naturalNum0ToNaturalNum3 (Successor n) = \z s -> s (naturalNum0ToNaturalNum3 n z s)
+> naturalNum0ToNaturalNum4 :: NaturalNum0 -> NaturalNum4
+> naturalNum0ToNaturalNum4 Zero = \z s -> z
+> naturalNum0ToNaturalNum4 (Successor n) = \z s -> s (naturalNum0ToNaturalNum4 n z s)
 
-> naturalNum3ToNaturalNum0 :: NaturalNum3 -> NaturalNum0
+> naturalNum3ToNaturalNum0 :: NaturalNum4 -> NaturalNum0
 > naturalNum3ToNaturalNum0 f = f Zero Successor
 
 > naturalNum0RoundTrip :: NaturalNum0 -> NaturalNum0 
-> naturalNum0RoundTrip n = naturalNum3ToNaturalNum0 (naturalNum0ToNaturalNum3 n)
+> naturalNum0RoundTrip n = naturalNum3ToNaturalNum0 (naturalNum0ToNaturalNum4 n)
+
+> hello :: Int
+> hello = naturalNum0ToInt (naturalNum3ToNaturalNum0 (unNat (fixedPoint'''' (fixedPointBlahBlahBlah (successorNat (successorNat zeroNat))))))
