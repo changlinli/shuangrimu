@@ -868,10 +868,15 @@ update msg model = case# msg of
 totalDrinks : { a | sodas : Int, waters : Int, juices : Int } -> Int
 totalDrinks { sodas, waters, juices } = sodas + waters + juices
 
-view : Model -> Html (a or DrinkSelectionMsg or @ElementMsg SelectionElementChange) 
+-- Fully expanded it's
+-- view : Model -> Html (a or @ClearMyDrinkSelection () or DrinkSelectionMsg or @ElementMsg SelectionElementChange)
+view : Model -> Html (a or Msg)
 view model = Html.div 
     [] 
     [ viewDrink 
+    , Html.button 
+        [ Html.onClick (@ClearMyDrinkSelection ()) ] 
+        [ Html.text "Clear drinks" ]
     , Html.text <| "Total drinks: " ++ Int.toString (totalDrinks model)
     ]
 
