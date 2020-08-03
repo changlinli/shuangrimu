@@ -981,7 +981,7 @@ incompleteFunction = case# myType of
 outputFunction int = case int of
     0 -> @Hello ()
 
-    1 -> @Bye ()
+    _ -> @Bye ()
 
 -- Compile error! 
 -- Could not match `a or @Hello () or @Bye ()` with `@Hello ()`
