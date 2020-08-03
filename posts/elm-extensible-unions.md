@@ -745,7 +745,7 @@ records instead of just vanilla product types to thank for that.)
 
 There's a classic blog post that gets shared around whenever anyone asks about
 how to break up updates and messages:
-[https://medium.com/@_rchaves_/child-parent-communication-in-elm-outmsg-vs-translator-vs-nomap-patterns-f51b2a25ecb1](https://medium.com/@_rchaves_/child-parent-communication-in-elm-outmsg-vs-translator-vs-nomap-patterns-f51b2a25ecb1).
+[https://medium.com/@\_rchaves\_/child-parent-communication-in-elm-outmsg-vs-translator-vs-nomap-patterns-f51b2a25ecb1](https://medium.com/@_rchaves_/child-parent-communication-in-elm-outmsg-vs-translator-vs-nomap-patterns-f51b2a25ecb1).
 
 The post talks about three strategies for how to modularize Elm code: NoMap,
 OutMsg, and Translator. That post has the details on those approaches, but I'll
@@ -1025,9 +1025,9 @@ let is_positive_permissive = function
   | _ -> Error "Unknown number type"
 ```
 
-` `` ` plays the same role as `@` does in our earlier notation. Note that we
-explicitly cannot have the catch-all case with the current outline of extensible
-unions, side-stepping this problem.
+The backtick \` in OCaml plays the same role as `@` does in our earlier
+notation. Note that we explicitly cannot have the catch-all case with the
+current outline of extensible unions, side-stepping this problem.
 
 RWO talks about greater-than and less-than bounds on polymorphic variants and
 attributes much of the drawbacks of polymorphic variants to them. However, those
