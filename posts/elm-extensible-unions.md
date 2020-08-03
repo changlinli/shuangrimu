@@ -24,11 +24,7 @@ excellent way of guiding users through refactors.
 
 This post is jumping off a separate post [here](https://discourse.elm-lang.org/t/how-to-represent-many-subsets-of-an-enum/6088/22)
 with some folks who were interested in a deeper explanation of extensible
-unions/polymorphic variants. Since they expressed interest, I'll tag
-@rupert and @dta here. I'll also tag @ymtszw because their comment about
-"narrowing down" types is exactly what extensible unions are all about (despite
-their moniker of "extensible", in the same that "extensible" records let you
-narrow down records).
+unions/polymorphic variants. 
 
 This post ended up being __really__ long, so I apologize for its length in
 advance, but I do hope that people find it useful.
