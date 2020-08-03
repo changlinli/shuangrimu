@@ -907,7 +907,9 @@ programmers have when code starts getting better. NoMap fails at 2. You need a
 giant message type for everything that lives in its own file.  NoMap's
 compromises around type safety also damage 3.
 
-Extensible union types give us all four. Even though I chose to 
+Extensible union types give us all four. Even though I chose to give my
+selection element a separate model, update, and view function as well as a
+distinct message type, that is not a decision I'm locked into.
 _It's not an all-in decision, I can pick and choose._ I could easily have undone
 any of those choices by simply inlining the function or type wherever it's used.
 For example, I could decide that `updateDrinkSelectionElement` doesn't need to
