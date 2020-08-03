@@ -1024,7 +1024,7 @@ let is_positive_permissive = function
   | _ -> Error "Unknown number type"
 ```
 
-`\`` plays the same role as `@` does in our earlier notation. Note that we
+` `` ` plays the same role as `@` does in our earlier notation. Note that we
 explicitly cannot have the catch-all case with the current outline of extensible
 unions, side-stepping this problem.
 
