@@ -66,7 +66,7 @@ This post is split up into the following sections:
 
 Let's begin with a very short primer on union (a.k.a. sum types) and product
 types. We'll approach them individually even though in Elm we can mix and match
-them together in a single type declaration. This hoepfully will make some of
+them together in a single type declaration. This hopefully will make some of
 the later presentation of extensible union types a little easier to follow.
 
 Union types are those types that express an "or" relationship among its type constructors.
@@ -876,7 +876,7 @@ totalDrinks { sodas, waters, juices } = sodas + waters + juices
 view : Model -> Html (a or Msg)
 view model = Html.div 
     [] 
-    [ viewDrink 
+    [ viewDrinkSelectionElement model.selectionState
     , Html.button 
         [ Html.onClick (@ClearMyDrinkSelection ()) ] 
         [ Html.text "Clear drinks" ]
