@@ -108,7 +108,7 @@ However, there are much more restricted universes which also fulfill these
 axioms. In particular there are _sets_ in our usual universe which can be models
 of these limited axioms. See for example the set 
 
-$X = \{\{ \emptyset \}, \{ \{ \emptyset \} \}, \{ \{ \{ \emptyset \} \} \} \ldots\} \union \{ \{ \emptyset, \{ \emptyset \} \} \}$
+$X = \{\{ \emptyset \}, \{ \{ \emptyset \} \}, \{ \{ \{ \emptyset \} \} \} \ldots\} \cup \{ \{ \emptyset, \{ \emptyset \} \} \}$
 
 Note that this entire set $X$ is a model of our theory. It is also an element of
 $U$. That means that, considered, as a model of $T$, $X$ is not itself a set,
