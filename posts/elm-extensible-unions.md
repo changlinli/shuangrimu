@@ -812,7 +812,8 @@ type alias DrinkSelectionMsg = @Soda Int or @Water Int or @Juice Int
 -- A DrinkSelectionMsg is returned when an actual selection is made
 -- Other user actions may trigger other kinds of updates to the element (e.g.
 -- mousing over the element may cause it to change color) which result in an
--- @ElementMsg ElementState message being fired with a new ElementState
+-- @ElementMsg SelectionElementChange message being fired. We can then use
+-- SelectionElementChange to update our ElementState
 viewDrinkSelectionElement : ElementState -> 
     Html (a or DrinkSelectionMsg or @ElementMsg SelectionElementChange)
 viewDrinkSelectionElement = ...
