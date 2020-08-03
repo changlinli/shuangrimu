@@ -870,6 +870,9 @@ totalDrinks { sodas, waters, juices } = sodas + waters + juices
 
 -- Fully expanded it's
 -- view : Model -> Html (a or @ClearMyDrinkSelection () or DrinkSelectionMsg or @ElementMsg SelectionElementChange)
+-- Note the complete lack of wrapping and unwrapping needed here
+-- viewDrink plays nicely with our button because of the extensible type
+-- variable parameter
 view : Model -> Html (a or Msg)
 view model = Html.div 
     [] 
@@ -902,11 +905,12 @@ Elm apps (I've paraphrased some of them here):
 4. Hard Component Divisions Are Unnecessary
 
 NoMap, YesMap, OutMsg, and Translator all fail in various ways to address these
-three points. OutMsg and Translator fail at point 1, requiring architectural
+four points. OutMsg and Translator fail at point 1, requiring architectural
 changes upfront, rather than arising organically from the usual impulses
 programmers have when code starts getting better. NoMap fails at 2. You need a
 giant message type for everything that lives in its own file.  NoMap's
-compromises around type safety also damage 3.
+compromises around type safety also damage 3. YesMap fails on 4 and makes 2
+harder.
 
 Extensible union types give us all four. Even though I chose to give my
 selection element a separate model, update, and view function as well as a
