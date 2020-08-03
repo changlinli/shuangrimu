@@ -242,7 +242,7 @@ inferred user = case# user of
 -- Inferred as
 -- inferred1 : @AdminUser a -> a
 inferred1 user = case# user of
-    `AdminUser a -> a
+    @AdminUser a -> a
 ```
 
 Now let's turn our attention back to the type signatures of
@@ -492,7 +492,8 @@ reddishness color = case color of
 -- Later on I have to deal with a `Maybe` that has no real reason to exist
 ```
 
-With 
+With extensible unions, we can have a flat hierarchy and take arbitrary subsets
+of it instead of being locked-in.
 
 ```elm
 type alias CustomColor = @Red ()
