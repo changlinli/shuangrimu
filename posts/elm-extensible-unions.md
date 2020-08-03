@@ -1015,7 +1015,7 @@ records cannot add or remove fields).
 
 __By limiting the power of extensible unions in the same way Elm already limits
 the power of extensible records, we can sidestep the issues that extensible
-records pose for the OCaml community__. Here it's worth looking at the exact
+variants pose for the OCaml community__. Here it's worth looking at the exact
 examples that RWO raises to illustrate some of the problems that RWO is talking
 about.
 
