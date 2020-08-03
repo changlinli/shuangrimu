@@ -170,7 +170,7 @@ an independent type in the same way `{ field0 : Int }` is an independent type,
 rather than just a value like `RegularUser Int`.
 
 ```elm
-'SomeVariantTag MyType
+@SomeVariantTag MyType
 ^ tag name      ^ tagged type
 
 { recordField : MyType }
