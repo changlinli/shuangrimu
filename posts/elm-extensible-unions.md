@@ -805,8 +805,7 @@ type SelectionElementState = ...
 
 type SelectionElementChange = ...
 
--- We can make it clearer by separating out type aliases
--- The Int indicates how many drinks
+-- The Int indicates how many drinks we've ordered of this type
 type alias DrinkSelectionMsg = @Soda Int or @Water Int or @Juice Int
 
 -- Returns what kind of drink and quantity a user has selected
