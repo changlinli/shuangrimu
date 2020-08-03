@@ -248,7 +248,7 @@ inferred1 user = case# user of
 Now let's turn our attention back to the type signatures of
 `someOtherRegularUser` and `someRegularUser`.
 
-Now what's the inferred type signature of `'RegularUser 0` if we don't provide
+Now what's the inferred type signature of `@RegularUser 0` if we don't provide
 an explicit type signature?
 
 ```elm
