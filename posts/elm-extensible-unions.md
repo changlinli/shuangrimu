@@ -893,13 +893,13 @@ all the same type safety and "on-the-rails" guiding by the Elm compiler that we
 get from the other approaches.
 
 Let's also turn to the usual advice the Elm guide gives us around structuring
-Elm apps:
+Elm apps (I've paraphrased some of them here):
 [https://guide.elm-lang.org/webapps/structure.html](https://guide.elm-lang.org/webapps/structure.html).
 
-+ Do Not Plan Ahead
-+ Building Modules Around Types
-+ Rely on the Elm Compiler to Have Your Back with Refactors
-+ Hard Component Divisions Are Unnecessary
+1. Do Not Plan Ahead
+2. Building Modules Around Types
+3. Rely on the Elm Compiler to Have Your Back with Refactors
+4. Hard Component Divisions Are Unnecessary
 
 NoMap, YesMap, OutMsg, and Translator all fail in various ways to address these
 three points. OutMsg and Translator fail at point 1, requiring architectural
@@ -908,7 +908,7 @@ programmers have when code starts getting better. NoMap fails at 2. You need a
 giant message type for everything that lives in its own file.  NoMap's
 compromises around type safety also damage 3.
 
-Extensible union types give us all three. Even though I chose to 
+Extensible union types give us all four. Even though I chose to 
 _It's not an all-in decision, I can pick and choose._ I could easily have undone
 any of those choices by simply inlining the function or type wherever it's used.
 For example, I could decide that `updateDrinkSelectionElement` doesn't need to
