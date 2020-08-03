@@ -164,8 +164,8 @@ type alias User2 a = a or @RegularUser Int or @AdminUser String
 ```
 
 Let's go over `User1` and `User2` in more detail. Names prefixed with a
-caret such as `'RegularUser` are extensible union tags. These play an
-analogous role to field names in a record type. That is `'RegularUser Int` is
+an `@` symbol such as `@RegularUser` are extensible union tags. These play an
+analogous role to field names in a record type. That is `@RegularUser Int` is
 an independent type in the same way `{ field0 : Int }` is an independent type,
 rather than just a value like `RegularUser Int`.
 
