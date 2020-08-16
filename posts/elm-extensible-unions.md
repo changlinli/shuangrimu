@@ -1,10 +1,10 @@
 ---
 title: Extensible unions in Elm
-cover-image: Infinite.svg
+cover-image: Circle_graph_C5.svg
 author: Rimu Shuang
-attribution: 'Public Domain. Created by MarianSigler, 2006. Originally
-from <a href="https://commons.wikimedia.org/wiki/File:Infinite.svg">Wikimedia
-Commons</a>.'
+attribution: 'David Benbennick with
+contributions from Illes, and Koko90. 
+<a href="https://commons.wikimedia.org/wiki/File:Circle_graph_C5.svg">Circle_graph_C5.svg</a>. 2010. Public Domain (NOT a CC-BY 4.0 License).'
 subhead: Extensible unions happen to be a great fit for Elm!
 tags: elm
 date: 2020-08-03T00:07:00-0500
