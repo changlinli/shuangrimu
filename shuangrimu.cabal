@@ -11,7 +11,7 @@ license-file:        LICENSE
 executable site
   main-is:          site.lhs
   build-depends:    base == 4.*
-                  , hakyll >= 4.7 && < 4.11
+                  , hakyll >= 4.7 && < 4.13
                   , blaze-html >= 0.7 && < 0.10
                   , bifunctors == 5.*
                   , filepath == 1.4.*
@@ -20,5 +20,8 @@ executable site
                   , aeson >= 0.11 && <= 1.3
                   , text == 1.*
                   , mtl == 2.2.*
+                  , latex-svg-hakyll == 0.2
+                  , latex-svg-image == 0.2
+                  , latex-svg-pandoc == 0.2
   ghc-options:      -threaded
   default-language: Haskell2010

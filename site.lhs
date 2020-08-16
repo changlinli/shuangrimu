@@ -56,6 +56,9 @@ Actual Code
 > {-# LANGUAGE FlexibleContexts #-}
 > import           Data.Monoid (mappend, (<>))
 > import           Hakyll
+> import           Hakyll.Contrib.LaTeX (initFormulaCompilerSVGPure)
+> import           Image.LaTeX.Render (defaultEnv, displaymath, preamble)
+> import           Image.LaTeX.Render.Pandoc (defaultPandocFormulaOptions, formulaOptions)
 > import           Text.Blaze.Html5 (toHtml, toValue, (!))
 > import qualified Text.Blaze.Html5 as Html
 > import qualified Text.Blaze.Html5.Attributes     as A
@@ -177,6 +180,8 @@ itself (since it's valid Markdown after all)!
 
 > main :: IO ()
 > main = hakyll $ do
+>     let mathFormulaCompiler = initFormulaCompilerSVGPure defaultEnv
+>     let pandocFormulaOptions = defaultPandocFormulaOptions { formulaOptions = (\_ -> displaymath { preamble = (preamble displaymath) ++ "\n\\usepackage{bussproofs}" }) }
 >     compileHtAccessFile
 >
 >     copyFavicon
@@ -195,10 +200,10 @@ itself (since it's valid Markdown after all)!
 >     createLicensingPage tags
 >     create404Page tags
 >     createSiteCodePage tags
-> 
+>
 >     match "posts/*" $ do
 >         route $ setExtension "html"
->         compile $ pandocCompiler
+>         compile $ pandocCompilerWithTransformM defaultHakyllReaderOptions defaultHakyllWriterOptions (mathFormulaCompiler pandocFormulaOptions)
 >             >>= saveSnapshot "content"
 >             >>= loadAndApplyTemplate "templates/post.html"    (tagsField "tags" tags <> injectCustomColor "" <> postCtx)
 >             >>= loadAndApplyTemplate "templates/default.html" postCtxWithTags
@@ -371,7 +376,7 @@ This is for parsing
 >             loadAllSnapshotsNoVersion "posts/*" "content"
 >         renderer feedConfig feedCtx posts
 > 
-> getItemTitle :: MonadMetadata m => Identifier -> m Text
+> getItemTitle :: (MonadFail m, MonadMetadata m) => Identifier -> m Text
 > getItemTitle identifier = do
 >     metadata <- getMetadata identifier
 >     case Map.lookup "title" metadata of
