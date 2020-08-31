@@ -1,10 +1,9 @@
 ---
 title: Formalization of extensible unions in Elm
-cover-image: Circle_graph_C5.svg
+cover-image: hindley-milner.svg
 author: Rimu Shuang
-attribution: 'David Benbennick with
-contributions from Illes, and Koko90. 
-<a href="https://commons.wikimedia.org/wiki/File:Circle_graph_C5.svg">Circle_graph_C5.svg</a>. 2010. Public Domain (NOT a CC-BY 4.0 License).'
+attribution: 'Unknown author. 
+<a href="https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system">Declarative Rule System</a>. Unknown year. Creative Commons Attribution-ShareAlike 3.0 Unported License (NOT a CC-BY 4.0 License).'
 subhead: 'A brief exploration of some of the theoretical underpinnings of
 extensible unions'
 tags: elm
