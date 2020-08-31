@@ -7,7 +7,7 @@ attribution: 'Unknown author.
 subhead: 'A brief exploration of some of the theoretical underpinnings of
 extensible unions'
 tags: elm
-date: 2020-08-30T00:10:40-0500
+date: 2020-08-30T22:40:00-0500
 ---
 
 This is a follow-up to my previous post
