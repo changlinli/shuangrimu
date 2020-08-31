@@ -123,6 +123,12 @@ exist into `_site`.
 >         route   idRoute
 >         compile copyFileCompiler
 >
+> copyStaticFiles :: Rules ()
+> copyStaticFiles = 
+>     match "static/*" $ do
+>         route   idRoute
+>         compile copyFileCompiler
+>
 > copyImages :: Rules ()
 > copyImages =
 >     match "images/*" $ do
@@ -180,6 +186,7 @@ itself (since it's valid Markdown after all)!
 >     compileHtAccessFile
 >
 >     copyFavicon
+>     copyStaticFiles
 >     copyImages
 >     copyCustomJavascript
 >     copyPrettifyJsLibrary
