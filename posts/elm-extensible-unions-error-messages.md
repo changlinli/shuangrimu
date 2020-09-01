@@ -542,7 +542,8 @@ agrees nicely with programmer's intuitions of "what went wrong."
 
 Indeed we can capture our reasoning in a very straightforward algorithm.  Assume
 we have a type error between two row types `A` and `B` for a given expression
-`E`, at least one of which is polymorphic, take the row type that has two 
+`E`, at least one of which is polymorphic, take the row type that has too many
+rows in it and call it `A`. Label the other one `B`.
 
 Because inference has already run, we know the type of every subexpression with
 `E`.
@@ -555,7 +556,7 @@ Because of this behavior we know two things:
 2. This row must appear in the type signature of a value or function symbol
    outside the expression, i.e. before running unification on the expression
 
-Without loss of generality, assume that row to be `A`.
+With those two things in mind we can run the following algorithm.
 
 1. Choose one row `r0 : T` in `A` which does not exist in `B`.
 2. Collect every symbol, including duplicates, in the expression whose type
@@ -579,11 +580,11 @@ We re-run these steps for every row that exists in `A` which does not exist in
 `B`.
 
 The dropping of elements in step 3 occurs because we can have irrelevant symbols
-that are "swallowed" by functions and don't contribute to the final 
+that are "swallowed" by functions and don't contribute to the final type
+signature.
 
-We then report the elements contained in each `C`.
-
-This results in nice, localized error messages.
+Each of the elements marked earlier as a source of `r0: T` then can be used for
+nice, localized error messages.
 
 Here's a hypothetical example that demonstrates one run of the algorithm:
 
@@ -632,9 +633,11 @@ Let's run through the algorithm sketched out above to see how we can precisely
 identiy `@BB 5` as the source of the error.
 
 First, unification results in `x3` having a type `@BB Int` which `f` does not
-support. Then we collect all our symbols for `C`, which are the following:
+support. Then we collect all our symbols in `value` to insert into our
+collection `C` (the collection mentioned in step 2 of the above algorithm),
+which are the following:
 ```
-@A, 0, @BB (@BB 5), 5, identity, True, @BB (@BB 10), 10, 2, f, +
+@A, 0, @BB (@BB 5), 5, identity, False, @BB (@BB 10), 10, 2, f, +
 ```
 We then narrow down to the symbols whose types contain `@BB Int`.
 ```
