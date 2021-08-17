@@ -10,10 +10,87 @@ tags: Miscellaneous
 date: 2021-05-22T19:27:26-0800
 ---
 
-"Dependent types" has always been one of those terms that lurks in the
-background of various chats about programming that seems to hav
+"Dependent types" seem to be one of those things a lot of programmers have heard
+about, but don't really know much about it. Discussion forums talk about how you
+can prove things with dependent types and how they're so so awesome for program
+correctness, but the discussions often are very confused with people talking
+past each other. Unfortunately most introductions to dependent types seem to
+assume a deep familiarity with functional programming or to assume a certain
+amount of familiarity with programming language theory.
 
-Our pseudocode will be written in a language that's a cross between
+I personally think dependent types are a fantastic feature I would like to
+see many more programming languages implement, rather than the paltry few that
+currently exist, but I also am quite skeptical of how dependent types are often
+used today in the few languages that do implement them and would like to suggest
+new ways of using them. However, I will not be talking about the latter in this
+post and will mainly be focusing on describing dependent types as they are found
+today.
+
+Here I present an introduction to dependent types that is hopefully accessible
+for anyone who has worked with a statically typed language before that has some
+sort of a switch or case matching sort of functionality. I'll go over some of
+the basics of how to use dependent types to prove things. This will be very
+heavy on pseudocode examples and very light on theory. Once you have an
+intuition for how the examples work, I believe you will be better equipped to
+understand other more theoretical introductions to dependent types.
+
+Because this is targetted at people who have no experience with dependent types
+the pace will be slow and potentially have some repetition.
+
+To those who are familiar with dependent types, it is worth mentioning that this
+introduction focuses heavily on dependent pattern matching as its primary method
+of interaction with the typechecker rather than eliminators. While the latter is
+theoretically cleaner, the former is often more familiar to software developers
+unfamiliar with CS and logic theory. It is also the most common presentation
+among existing dependently-typed languages.
+
+As mentioned, this post will present common uses of dependent types
+uncritically. This does not represent a personal endorsement of some of the
+patterns I'll be presenting here. In a follow-up post I will detail what common
+patterns in dependently-typed programming I believe to entail the wrong set of
+trade-offs when it comes to production code in most businesses. In particular I
+believe believe that a proof-heavy way of using dependent types is usually not
+the best way to leverage dependent types and that this is even more aggravated
+when the proofs are integrated into the data structure (such as the common
+example of length-indexed vectors and type-safe append).
+
+However, that will all come later. For now I'll be presenting aspects of
+dependent types as they exist "in the wild" mostly divorced of my own thoughts
+about them.
+
+This post is long and is structured into several parts:
+
+1. __Introduction to our pseudo-code__ : Our pseudo-code will consist of three
+   main concepts: type constructors, pattern matching, and functions. Dependent
+   types derive their power from a special type of types called `Type` that
+   allows for more flexible type constructors and additional information passed to
+   the type checker while pattern matching.
+2. __Using the Type type__: Dependent types let you work with types just the
+   same as you would any other value. This lets you recreate stuff like generics
+   without any built-in support for them.
+3. __Creating dependent types__: We can use this increased flexibility to create
+   dependent types: types that depend on runtime values.
+4. __Using pattern matching to narrow down runtime values__: Our static
+   typechecker needs to be able to statically narrow down runtime values to
+   actually work. To do that we will use pattern matching.
+5. __Determining when types are equal__:
+6. __Using type equality to prove runtime properties about our code: Boolean
+   edition__:
+7. __Using type equality to prove runtime properties about our code:
+   NaturalNumber edition__:
+8. __Dependent types in data structures__:
+9. __Using dependent types as a way of tagging data__:
+10. __Using dependent types as a way of tagging data__:
+11. __Why do dependently typed languages tend to be pure functional languages?__:
+
+## Introduction to our pseudo-code
+
+We will be working with some pseudocode inspired by Typescript, Java, Kotlin,
+and Scala. Note that none of these languages have full-blown dependent types of
+the sort I'll be presenting here although Typescript and Scala have some small
+fragments.
+
+It looks something like this:
 
 ```
 // This is a comment
@@ -25,8 +102,8 @@ Our pseudocode will be written in a language that's a cross between
 /*
  * This is how we create a new type
  *
- * Type constructors are the atomic "building blocks" of our programs. Every
- * non-function expression ultimately evaluates to one of these constructors of
+ * Type constructors are the atomic "building blocks" of our programs. Most
+ * non-function expressions ultimately evaluates to one of these constructors of
  * some type.
  *
  * We can create the usual primitive types this way, such as `Boolean`. We'll
@@ -54,15 +131,17 @@ function notNot(x: Boolean): Boolean = {
     not(oneNot)
 }
 
+// Here's how we declare variables
+// Once assigned they're immutable, we'll take more later about why this is
+// important
+val thisIsFalse = not(True)
+
 type Shape constructors {
     Rectangle(isSquare: Boolean): Shape
     Circle: Shape
     Triangle(isEquilateral: Boolean): Shape
 }
 
-// Here's how we declare variables
-// Once assigned they're immutable, we'll take more later about why this is
-// important
 val square: Shape = Rectangle(True)
 
 function isPointy(shape: Shape): Boolean = {
@@ -124,7 +203,21 @@ function add(x: NaturalNumber, y: NaturalNumber): NaturalNumber = {
         Successor(prev) => Successor(add(prev, y))
     }
 }
+
+// We can also recurse on both arguments
+// True if x is greater than y, False otherwise
+function greaterThan(x: NaturalNumber, y: NaturalNumber): Boolean = {
+    case x of {
+        Zero => False
+        Successor(prevX) => case y of {
+            Zero => True
+            Successor(prevY) => greaterThan(prevX, prevY)
+        }
+    }
+}
 ```
+
+## Using the Type type
 
 We can also have the equivalent of generics in other languages, however we're
 going to do this in a little different manner.
@@ -133,7 +226,7 @@ Here's the first semi-exotic thing that you might not have seen in other
 statically typed languages. We have a special "type of types" called `Type`.
 Any expression that is a `Type` can be used in a type signature.
 
-This means that we don't have separate generic arguments to type denoted by
+This means that we don't have separate generic arguments to a type denoted by
 angle or square brackets such as `List<Int>` or `List[Int]` that you might find
 in other languages. We just use the same round parentheses as usual. This is a
 little wordier than the usual treatment of generics, but that's because I'm
@@ -143,6 +236,7 @@ inference mechanisms.
 ```
 // This is similar to an Option<T>, Option[T], or Maybe t type you might find in
 // other languages
+// Notice that `t: Type` is just a normal argument like any other!
 type Option(t: Type) constructors {
     // Because x is a Type it can be used in the type signature of value
     Some(x: Type, value: x): Option(x)
@@ -181,12 +275,16 @@ function SynonymForBoolean(): Type = Boolean
 val someBool: SomeSynonymForBoolean() = True
 ```
 
+## Creating dependent types
+
 But an explicit `Type` by itself isn't a dependent type quite yet. Here's our
 first true dependent type, that is a `Type` that depends on a runtime value.
 
 ```
 // Again note that capitalizing the first letter of this function is just
 // convention, nothing more
+// Notice that unlike List which took an argument of type Type, here we have an
+// argument boolean which is the normal runtime type Boolean
 function ShapeOrNumber(boolean: Boolean): Type = {
     case boolean of {
         True => NaturalNumber
@@ -204,6 +302,11 @@ literals in a type signature! But of course the question arises, yeah this is
 all and well when we have type constructor literals such as False or True, but
 what happens when you don't have a literal?
 
+## Using pattern matching to narrow down runtime values
+
+Let's take a look at perhaps the simplest "hail Mary" approach where we just try
+to stick in an abstract variable and see what happens.
+
 ```
 function useAtRuntime(boolean: Boolean): NaturalNumber = {
     // Does this type check?
@@ -211,15 +314,20 @@ function useAtRuntime(boolean: Boolean): NaturalNumber = {
     // compiler can't evaluate abstract variables so it can't figure out what
     // type ShapeOrNumber(boolean) evaluates to, which is just as well since
     // this can't possibly work if boolean is False
-    val result: ShapeOrNumber(boolean) = 1
-    result
+    val thisDoesntCompile: ShapeOrNumber(boolean) = 1
+    thisDoesntCompile
 }
 ```
 
-The answer is that you must pattern match! Every pattern match gives the
-compiler additional information about the runtime value of a variable in that
-branch. Then in the branches of your pattern match you can recover literals that
-you pass to `ShapeOrNumber`.
+So there's no magic here that can make this work. At a first glance this seems
+to severely cripple dependent types. After all the majority of runtime values
+are *not* going to be literals. And in fact we are pretty screwed if we have
+arbitrary runtime values.  But we have a way of narrowing down what the value of
+a runtime value can be so that it's not arbitrary anymore: pattern matching!
+
+Every pattern match gives the compiler additional information about the runtime
+value of a variable in that branch. Then in the branches of your pattern match
+you can recover literals that you pass to `ShapeOrNumber`.
 
 ```
 function useAtRuntimeTryAgain(boolean: Boolean): NaturalNumber = {
@@ -238,7 +346,11 @@ function useAtRuntimeTryAgain(boolean: Boolean): NaturalNumber = {
             val result: ShapeOrNumber(boolean) = 1
             result
         }
-        False => 0
+        False => 
+            // In this branch the typechecker now knows that boolean is False
+            // We aren't doing anything with this information but we could've
+            // used it to create something like `val someValue: ShapeOrNumber(boolean) = Circle`
+            0
     }
 }
 
@@ -254,8 +366,13 @@ types that occur in that branch.
 
 This bears repeating: **pattern matching is the fundamental tool that we use to
 tell the compiler more information about which types are equal to each other.**
+This makes dependent pattern matching a more powerful tool than in a
+non-dependently-typed setting.
 
-This brings me to the subject of type equality. All languages with static type
+## Determining when types are equal
+
+But to understand this in more detail, we have to understand the phrase "what
+type are equal to each other" in more detail. All languages with static type
 systems have an implicit idea of what type equality is. For example any static
 type checker would reject the following expression because it knows for certain
 the `Boolean` and `Shape` are not equal.
@@ -268,7 +385,8 @@ val thisDoesntWork : Boolean = Circle
 On the other hand, all statically typed languages have the ability to realize
 trivial type equalities.
 ```
-// Luckily our type checker knows Boolean = Boolean!
+// Luckily our type checker knows that True is of type Boolean and Boolean =
+// Boolean so therefore the types for thisDoesWork and True match!
 val thisDoesWork : Boolean = True
 ```
 
@@ -279,25 +397,85 @@ for non-trivial type-level computations before calculating type equality.
 
 Dependent types extend this and allow for runtime functions to be used in
 computations before calculating type equality. How exactly does this happen?
-Well the only kinds of computation that exist in our language so far are
+Well the forms of computation that exist in our language so far are
 function application and function evaluation and the only non-trivial bit of
-that is pattern matching. So we only need to worry about function evaluation.
+that is pattern matching. So the typechecker must have some way of evaluating
+functions. However, we don't always have all the information at compile time to
+fully evaluate a function (e.g. a number may be provided as user input). So
+instead the typechecker will often only partially evaluate a function.
 
-If a function appears in a signature, when type checking the compiler will try
-to evaluate a function until it reaches an abstract variable in a pattern match.
-
-If after this series of evaluations there are no more function applications left
-in either 
+In particular, if a function appears in a signature, when type checking the
+compiler will try to evaluate a function until it reaches an abstract variable
+in a pattern match.
 
 Then it will check whether what it has after this evaluation is syntactically
 equal or not. If they are syntactically equal then the compiler concludes the
 two types are equal. Otherwise the compiler declares it doesn't know whether
-they are equal or not (note importantly).
+they are equal or not. Note that this is not the same as the compiler declaring
+that two types are not equal! Due to stuff like the halting problem the compiler
+cannot always prove types are equal and sometimes just throws its hands up and
+says it doesn't know. It is then up to the programmer to prove that they are
+equal.
 
 Don't worry if you didn't quite get that, we'll get to some examples that will
-illustrate the idea further.
+illustrate the idea further. The main idea here is that the typechecker tries to
+evaluate functions unti it hits an abstract variable, then it compares for
+syntactic equality, and then it comes to one of the following conclusions:
 
-First let's return to our very first type declaration of `Boolean`.
+1. Sees that the types are syntactically equal
+2. Sees that the types are syntactically different, but that there were
+   functions that could not be further evaluated and therefore it doesn't know
+   whether the types were equal
+3. Sees that the types are syntactically different, but notices that all
+   functions have been completely evaluated, and therefore it knows the types
+   must be different.
+
+Let's go over some standalone examples of how the typechecker might try to
+compare two types for equality.
+
++ Comparing `Boolean` with `Int`: The typechecker notices that the types are
+  syntactically different and that there are no functions in these types.
+  Therefore it knows these types are different.
++ Comparing `Shape` with `ShapeOrNumber(False)`: The typechecker evaluates
+  `ShapeOrNumber(False)`. It gets to `case boolean of `, which it can further
+  evaluate because boolean is set to `False` via the `False` literal whose value
+  is known at compile-time. It therefore realizes that `Shape` is equal to
+  `ShapeOrNumber(False)`.
++ Comparing `Shape` with `ShapeOrNumber(True)`: The typechecker evaluates
+  `ShapeOrNumber(True)`. It gets to `case boolean of `, which it can further
+  evaluate because boolean is set to `True` via the `True` literal whose value
+  is known at compile-time. It therefore realizes that `Shape` is *not* equal to
+  `ShapeOrNumber(True)` because it has evaluated `ShapeOrNumber(True)` to
+  `NaturalNumber`.
++ Comparing `Shape` with `ShapeOrNumber(someUnknownValue)`: The typechecker attempts to
+  evaluate `ShapeOrNumber(someUnknownValue)`, but it gets stuck on the case
+  check `case boolean of` in `ShapeOrNumber` because this time `boolean` is an
+  abstract variable whose value is set to `someUnknownValue` which is also an
+  abstract value. Therefore it can't access the actual pattern match after 
+  `case boolean of` and stops evaluation. Without full evaluation it cannot
+  conclude whether `ShapeOrNumber(someUnknownValue)` is equal to `Shape`.
++ Comparing `Shape` with `ShapeOrNumber(someUnknownValue)` where we are in the
+  `False` branch of a pattern match somewhere that looks like
+
+        case someUnknownValue of {
+            case True => ...
+
+            case False => ... // Where we are
+        }
+
+  : The typechecker now knows that `someUnknownValue` is `False` and can evaluate
+  `ShapeOrNumber(someUnknownValue)` completely, which alllows it to realize that
+  `ShapeOrNumber(someUnknownValue)` and `Shape` are equal.
++ Comparing `ShapeOrNumber(someUnknownValue)` with
+  `ShapeOrNumber(someUnknownValue)`: Even though the typechecker cannot evaluate
+  either type fully, it sees that they are syntactically identical and therefore
+  concludes that they are equal.
+
+## Using type equality to prove runtime properties about our code: Boolean edition
+
+So that's a brief look at type equality. Let's see how we can make of use of
+that more explictly in our code. First let's return to our very first type
+declaration of `Boolean`.
 
 ```
 type Boolean constructors {
@@ -309,9 +487,9 @@ type Boolean constructors {
 ```
 
 At the time we noted that the `: Boolean` looks redundant and up until now it
-really has been kind of redundant. All of our custom could've been written
-without it and it could've been inferred by the compiler. However, now let's
-make use of the fact that our constructors have explicit return types.
+really has been kind of redundant. All of our types could've been written
+without it and it could've (in theory) been inferred by the compiler. However,
+now let's make use of the fact that our constructors have explicit return types.
 
 ```
 type IsEqual(t: Type, x: t, y: t) constructors {
@@ -322,15 +500,19 @@ type IsEqual(t: Type, x: t, y: t) constructors {
 }
 ```
 
-We are using the trick of having a single value `x` in the argument to `Refl`
-duplicated in the return type of `IsEqual`. This constrains `IsEqual`'s `x` and
-`y` arguments to be equal to each other in a way that the type checker can see.
-`IsEqual` and its analogues are very fundamental types in dependently typed
-languages. They allow us to take the implicit notion of type equality in the
-"brains" of our type checker and use an explicit representation of it. And
-because dependent types allow for runtime values to exist in types, we can
-create a type that uses the type checker's implicit notion of equality to create
-a compile-time representation of equality among runtime values!
+The crucial point to see here is that the return value of `Refl` is a
+constrained version of `IsEqual` rather than a completely unconstrained
+`IsEqual(t, x, y)`.
+
+By having a single value `x` in the argument to `Refl` duplicated in the return
+type of `IsEqual`, we constrain `IsEqual`'s `x` and `y` arguments to be equal to
+each other in a way that the type checker can see.  `IsEqual` and its analogues
+are very fundamental types in dependently typed languages. They allow us to take
+the implicit notion of type equality in the "brains" of our type checker and use
+an explicit representation of it. And because dependent types allow for runtime
+values to exist in types, we can create a type that uses the type checker's
+implicit notion of equality to create a compile-time representation of equality
+among runtime values!
 
 How does it work? Well let's take it for a spin.
 
@@ -349,10 +531,10 @@ val trueIsEqualToTrue: IsEqual(Boolean, True, True) = {
 val trueIsEqualToFalse: IsEqual(Boolean, True, False) = // Impossible
 ```
 
-This is a pretty cool trick! The type signature of our values and functions are
-now logical propositions that expresses a runtime property about our code!  So
-far the propositions we've seen are trivial, namely that every value is equal to
-itself.  Let's move on to a fancier proposition.
+This is a pretty cool trick. As we will soon see, this lets us express runtime
+properties about our code as type signatures!  So far the properties we've seen
+are trivial, namely that `True` is equal to `True`.  Let's move on to a fancier
+proposition.
 
 ```
 // This type signature represents the fact that applying not twice to a Boolean
@@ -363,8 +545,8 @@ function notNotIsIdentity(x: Boolean): IsEqual(Boolean, x, not(not(x))) = {
 ```
 
 This proposition isn't some masterful insight, but it is at least more complex
-than the proposition that all things are equal to themselves! Let's see how we
-can get the type checker to accept this.
+than the proposition that things are equal to themselves! Let's see how we can
+get the type checker to accept this.
 
 First let's just try stuffing `Refl` there.
 
@@ -376,7 +558,8 @@ function notNotIsIdentity(x: Boolean): IsEqual(Boolean, x, not(not(x))) = {
 ```
 
 The compiler fails to accept that `Refl(Boolean, x)`'s type of `IsEqual(Boolean,
-x, x)` can unify with `IsEqual(Boolean, x, not(not(x)))`.
+x, x)` can unify with `IsEqual(Boolean, x, not(not(x)))`, that is it can't tell
+that `IsEqual(Boolean, x, x)` is equal to `IsEqual(Boolean, x, not(not(x)))`.
 
 You can think of the process as something like the following
 
@@ -405,12 +588,12 @@ You can think of the process as something like the following
 
 So the compiler was unable to prove that `x = not(not(x))` during the course of
 type checking. Note that the compiler was also unable to prove `x !=
-not(not(x))` since it was unable to finish evaluating `not(not(x))`! We'll get
-back to the `!=` case later, but for now let's return to equality.
+not(not(x))` since it was unable to finish evaluating `not(not(x))`. We'll get
+back to the `!=` case later, but for now let's return to just `=`.
 
 As humans we know that `not(not(x))` evaluates to `x` for all `x`, so how we can
-provide that information to the compiler? The magic ingredient is pattern
-matching! Remember that pattern matching provides the compiler with more
+provide that information to the compiler? Once again the magic ingredient is
+pattern matching! Remember that pattern matching provides the compiler with more
 information in each branch that is pattern matched that it can then use to
 further evaluate functions while type checking.
 
@@ -463,8 +646,8 @@ let's run through the same steps we saw before.
 which evaluates to True.
 6. So the compiler now knows that not(not(x)) evaluates to True. It also knows x
    evaluates to True.
-6. Therefore the compiler can prove that not(not(x)) = x.
-7. Therefore the compiler can prove IsEqual(Boolean, x, x) = IsEqual(Boolean, x, not(not(x))
+7. Therefore the compiler can prove that not(not(x)) = x.
+8. Therefore the compiler can prove IsEqual(Boolean, x, x) = IsEqual(Boolean, x, not(not(x))
 ```
 
 Notice that crucial change in step 5! That extra bit of information that `x =
@@ -490,6 +673,10 @@ function notNotIsJustNotTwice(x: Boolean): IsEqual(Boolean, notNot(x), not(not(x
 }
 ```
 
+Yep just the same thing as before! The only difference is that in each branch of
+the pattern match we simultaneously evaluate both `notNot(x)` and `not(not(x))`,
+not just `not(not(x))`.
+
 We've seen how pattern matching on ordinary, non-dependent types can introduce
 new equality constraints by constraining an abstract variable to a type
 constrctor. However, we can also introduce equality constraints among abstract
@@ -510,6 +697,10 @@ function equalityIsPreservedForNot(
     }
 }
 ```
+The exact same function body also lets us prove this new statement. The reason
+is that `not(not(x))` and `notNot(x)` are both able to evaluate in each branch
+of the `case` statement when applied to `True` and `False` and after evaluation
+the compiler observes that the results are syntactically identical.
 
 In the `Refl` branch (which is the only branch), the type checker must unify the
 original type of `xEqualToY` with the new one introduced by `Refl`. So in
@@ -521,6 +712,12 @@ So roughly we get the following steps, which results in a successful type check.
 
 ```
 1. Derive x = y from the pattern match
+        
+        case xEqualToY of {
+            Refl(unused0, unused1) => ... // Matching against Refl introduces
+                                          // the constraint x = y
+        }
+
 2. Compare IsEqual(Boolean, x, x) (type of Refl(Boolean, x)) with IsEqual(Boolean, x, y)
 3. Boolean = Boolean, x = x, now compare x with y
 4. But we know that x = y so therefore the compiler can prove IsEqual(Boolean, x, x) = IsEqual(Boolean, x, y)
@@ -555,22 +752,18 @@ The steps look much the same, just with more abstract variables:
 4. But we know that x = y so therefore the compiler can prove f(x) = f(y) by
    syntactic substitution
 5. Therefore the compiler can prove IsEqual(t1, f(x), f(x)) = IsEqual(t1, f(x), f(y))
-5. Therefore Refl(t1, f(x)) successfully type checks
+6. Therefore Refl(t1, f(x)) successfully type checks
 ```
-
-The exact same function body also lets us prove this new statement. The reason
-is that `not(not(x))` and `notNot(x)` are both able to evaluate in each branch
-of the `case` statement when applied to `True` and `False` and after evaluation
-the compiler observes that the results are syntactically identical.
 
 So far we've seen how to prove that two values are equal to each other. What
 about if we want to prove that two values are *not* equal to each other?
 
 Let's introduce a new keyword called `impossible` to our pattern matches. As
 we've seen, when pattern matching we introduce new equality constraints for our
-type checker. However, if the type checker detects that equality constraints are
-self-contradictory, then we are allowed to write `impossible` on the right-hand
-side, which will always type check with whatever the overall type signature is.
+type checker. However, if and only if the type checker detects that equality
+constraints are self-contradictory, then we are allowed to write `impossible` on
+the right-hand side, which will always type check with whatever the overall type
+signature is.
 
 ```
 function onlyIfXAndYAreEqual(
@@ -588,13 +781,18 @@ function onlyIfXAndYAreEqual(
 ```
 
 Let's look at `(True, False, Refl(unused0, unused1)) => impossible` in more
-detail. The equality constraints the type checker detects are `x = True`, `y =
-False`, and then `IsEqual(Boolean, x, x) = IsEqual(Boolean, x, y)` which implies
-`x = y`. However, that would imply `True = False`, which the type checker knows
-is wrong, so the type checker allows us to insert the `impossible` keyword,
-which then unifies with `Boolean` because as we said before `impossible` unifies
-with anything, if the type checker detects a contradiction that allows you to
-use the keyword `impossible`.
+detail. 
+
+```
+1. Derive x = True, y = False, and IsEqual(Boolean, x, y) = IsEqual(Boolean, x,
+   x). The last one comes from matching on Refl.
+2. IsEqual(Boolean, x, y) = IsEqual(Boolean, x, x) implies that y = x
+3. But if y = x and x = True and y = False, then True = False
+4. This is a contradiction among base constructors of a type and therefore the
+   typechecker permits usage of the keyword impossible in this branch
+5. impossible also works with any type, in particular impossible unifies with
+   Boolean, so this branch fuly typechecks
+```
 
 **Note that syntactic equality was enough to prove equality, i.e. the type
 checker knows that f(x) = f(x), but syntactic inequality is not enough to prove
@@ -606,34 +804,45 @@ So for example the following function does not type check because it uses
 `impossible` incorrectly.
 
 ```
-function doesntWork(x: Boolean, y: Boolean): Boolean = {
+function onlyIfXAndYAreEqualBrokenVersion(
+    x: Boolean,
+    y: Boolean,
+    xEqualToY: IsEqual(Boolean, x, y)
+): Boolean = {
+    // Notice that we fail to match against xEqualToY
     case (x, y) of {
-        // Sure the compiler now knows x = a and y = b but it cannot conclude
-        // that a != b
-        (a, b) => impossible
+        // The compiler now knows that x = True and y = False, but it cannot derive
+        // any contradictions among its equality constraints because it doesn't
+        // know x = y since you haven't pattern matched against Refl, so it
+        // rejects impossible and this whole thing fails with a type error
+        (True, False) => impossible
+        // Same thing here
+        (False, True) => impossible
+        (True, True) => True
+        (False, False) => False
     }
 }
 ```
 
-Before we continue, I'm going to introduce a new type called `Empty` that has no
-constructors.
+Before we continue, I'm going to introduce a new type, suggestively called
+`Contradiction` that has no constructors.
 
 ```
-type Empty constructors {}
+type Contradiction constructors {}
 ```
 
-This means `Empty` cannot ever exist since there are no actual values of type
-`Empty`. Well if you can't actually create a value of type `Empty`, how could
-you ever return it from a function? Well we just said that `impossible` unifies
+This means `Contradiction` cannot ever exist since there are no actual values of type
+`Contradiction`. Well if you can't actually create a value of type `Contradiction`, how could
+you ever return it from a function? Well we just said that `impossible` works
 with any type... so what happens if every branch of your case statement ends in
-`impossible`?
+`impossible`? Well then you can use any type, including `Contradiction`.
 
 ```
 function xCannotBeBothTrueAndFalse(
     x: Boolean,
     xEqualToTrue: IsEqual(Boolean, x, True),
     xEqualToFalse: IsEqual(Boolean, x, False)
-): Empty = {
+): Contradiction = {
     case (x, xEqualToTrue, xEqualToFalse) of {
         (True, Refl(unused0, unused1), IsEqual(unused2, unused3)) =>
             impossible
@@ -641,6 +850,13 @@ function xCannotBeBothTrueAndFalse(
             impossible
     }
 }
+// Since impossible matches any type, we could've done
+// function xCannotBeBothTrueAndFalse(...): Boolean
+// or 
+// function xCannotBeBothTrueAndFalse(...): NaturalNumber
+// but those are a lot less semantically useful than Contradiction
+//
+// We'll revisit this with our principleOfExplosion function later
 ```
 
 Note here that in the first branch `Refl(unused0, unused1)` implies `x = True`
@@ -652,11 +868,11 @@ In fact we can see that the two `Refl`s are enough to derive a contradiction, so
 we don't actually need to pattern match on `x` at all.
 
 ```
-function xCannotBeBothTrueAndFalse(
+function xCannotBeBothTrueAndFalseNewVersion(
     x: Boolean,
     xEqualToTrue: IsEqual(Boolean, x, True),
     xEqualToFalse: IsEqual(Boolean, x, False)
-): Empty = {
+): Contradiction = {
     case (xEqualToTrue, xEqualToFalse) of {
         (Refl(unused0, unused1), IsEqual(unused2, unused3)) =>
             impossible
@@ -664,7 +880,7 @@ function xCannotBeBothTrueAndFalse(
 }
 ```
 
-Hence we can read any function with `Empty` as its output type as proving that
+Hence we can read any function with `Contradiction` as its output type as proving that
 all its input types cannot all simultaneously be true, they must contradict each
 other.
 
@@ -674,7 +890,7 @@ Here's another example.
 function xCannotBeEqualToNotX(
     x: Boolean,
     xEqualToNotX: IsEqual(Boolean, x, not(x))
-): Empty = {
+): Contradiction = {
     case (x, xEqualToNotX) of {
         (True, Refl(unused0, unused1)) => impossible
         (False, Refl(unused0, unused1)) => impossible
@@ -682,12 +898,35 @@ function xCannotBeEqualToNotX(
 }
 ```
 
-Unlike `xCannotBeBothTrueAndFalse` here we must pattern match on `x`. By pattern
-matching on `x` we allow evaluation of `not(x)` to occur, so that we end up with
-in the first branch the constraints `x = True` (by pattern matching on `x`),
-`not(x) = x` (by pattern matching on `Refl`) and then `not(True) = True` and
-finally `False = True`, which is a contradiction in constructors and allows us
-to write `impossible.
+Unlike `xCannotBeBothTrueAndFalseNewVersion` here we must pattern match on `x`.
+By pattern matching on `x` we allow evaluation of `not(x)` to occur, so that we
+end up with in the first branch the constraints `x = True` (by pattern matching
+on `x`), `not(x) = x` (by pattern matching on `Refl`) and then `not(True) =
+True` and finally `False = True`, which is a contradiction in constructors and
+allows us to write `impossible`.
+
+Having an explicit `Contradiction` type also lets us nicely write out the
+[https://en.wikipedia.org/wiki/Principle_of_explosion](https://en.wikipedia.org/wiki/Principle_of_explosion).
+
+```
+function principleOfExplosion(
+    proposition: Type, 
+    contradiction: Contradiction
+): proposition = {
+    // Note that an empty pattern match unifies with any return type
+    case contradiction of {}
+}
+
+// Now, assuming we have a consistent type system, we can't actually create a
+// top-level value of `Contradiction`, but perhaps we are in a function that has
+// contradictory values passed in.
+val someContradiction: Contradiction = ...
+
+val anythingGoes: IsEqual(Boolean, True, False) =
+    principleOfExplosion(IsEqual(Boolean, True, False), someContradiction)
+```
+
+## Using type equality to prove runtime properties about our code: NaturalNumber edition
 
 Now let's move away from `Boolean`s and make some propositions about
 `NaturalNumber`s.
@@ -731,14 +970,25 @@ This doesn't work with `Refl` because now when the type checker goes to evaluate
 cannot proceed.
 
 ```
-    // Notice that it isn't case Zero anymore!
+// Reminder that add looks like this
+function add(x, y: NaturalNumber): NaturalNumber = {
+    case x of {
+        Zero => y
+        Successor(prev) => Successor(add(prev, y))
+    }
+}
+
+// When you have add(x, Zero), we aren't matching against Zero anymore, but an
+// abstract x, since Zero is now on the right-hand side
+
     case x of {
         Zero => x
         Successor(prev) => Successor(add(prev, x))
     }
 ```
 
-So we need to manually pattern match on `x` for the compiler to help it out.
+So we need to manually pattern match on `x` at an earlier stage to constrain the
+value of `x` for the compiler to successfully evaluate the pattern match.
 
 ```
 function addingZeroOnRightDoesNothing(x: NaturalNumber): IsEqual(NaturalNumber, x, add(x, Zero)) = {
@@ -749,18 +999,34 @@ function addingZeroOnRightDoesNothing(x: NaturalNumber): IsEqual(NaturalNumber, 
 }
 ```
 
-So the `Zero` branch is pretty easy. We can just directly use `Zero` because if
-the type checker knows `x = Zero` then it can easily evaluate `add(x, Zero)` to
-just `Zero`. However, the `Successor` branch is a bit trickier. We now know that
-`x = Successor(x0)`, which is enough for `add` to evaluate once.
+The `Zero` branch is pretty easy. We can just directly use `Zero` because if the
+type checker knows `x = Zero` then it can easily evaluate `add(x, Zero)` to just
+`Zero`. However, the `Successor` branch is a bit trickier. We now know that `x =
+Successor(x0)`, which is enough for `add` to evaluate once.
+
+Let's walk through how this affects evaluation of `add`.
 
 ```
+// Again, reminder that add looks like this
+function add(x, y: NaturalNumber): NaturalNumber = {
+    case x of {
+        Zero => y
+        Successor(prev) => Successor(add(prev, y))
+    }
+}
+
+// Let's focus on what happens if x = Successor(x0) and y = Zero
+
     case (Successor(x0)) of {
         Zero => Zero // Note that the second argument to add was Zero, replacing y here
         Successor(prev) => Successor(add(prev, Zero)) // Again note that the second argument was Zero
     }
+
+// So therefore add(Successor(x0), Zero) just evaluates to
+
+   Successor(add(x0, Zero))
 ```
-yields `Successor(add(x0, Zero))`. However, that still isn't syntactically the
+However, `Successor(add(x0, Zero))` still isn't syntactically the
 same thing as `x` (or `Successor(x0)`) since the compiler knows `x =
 Successor(x0)` in this branch)!
 
@@ -769,9 +1035,36 @@ We have one trick up our sleeves, which is recursion on
 which has the type `IsEqual(NaturalNumber, x0, add(x0, Zero))`.
 
 That looks pretty promising! If we could somehow use `IsEqual(NaturalNumber, x0,
-add(x0, Zero))` to tell the compiler `add(x0, Zero) = x0` that would let us
-prove that `Successor(add(x0, Zero)) = Successor(x0)` which then lets us fill in
-that `???`.
+add(x0, Zero))` to tell the compiler that `Successor(x0) = Successor(add(x0,
+Zero))`, we would then be able to fill in that `???`.
+
+```
+function addingZeroOnRightDoesNothing(x: NaturalNumber): IsEqual(NaturalNumber, x, add(x, Zero)) = {
+    case x of {
+        Zero => Refl(NaturalNumber, x) // Refl(NaturalNumber, Zero) would also work here
+        Successor(x0) => 
+            // Assume we knew the following three things:
+            //
+            // x = Successor(x0)
+            // add(x, Zero) = Successor(add(x0, Zero))
+            // Successor(x0) = Successor(add(x0, Zero)) or equivalently Successor(add(x0, Zero)) = Successor(x0)
+            //
+            // Then we know that x = add(x, Zero) by the following substitutions
+            //
+            // x = add(x, Zero)
+            // Successor(x0) = add(x, Zero)
+            // Successor(x0) = Successor(add(x0, Zero))
+            // Successor(x0) = Successor(x0)
+            //
+            // And we could therefore write Refl(NaturalNumber, x) and be done.
+            // We already know x = Successor(x0) by pattern matching.
+            // We know add(x, Zero) = Successor(add(x0, Zero)) by evaluating add
+            // after taking into account x = Successor(x0)
+            // So we just need to prove Successor(x0) = Successor(add(x0, Zero))
+            ???
+    }
+}
+```
 
 Luckily we have that in the form of `functionsPreserveEquality` that we
 constructed earlier.
@@ -844,4 +1137,293 @@ Let's examine why `desiredEquality` type checks in a little bit more detail.
    equal
 ```
 
+Whew that one was a bit of a doozy! It gets easier once you've done a lot of
+these and start to develop some intuition.
 
+## Dependent types in data structures
+
+We've seen so far how we can use dependent types to make assertions about your
+code that can be proved in the type system. We can also use dependent types
+to create data structures that directly obey some sort of invariant. The most
+common example of this is length-indexed vectors. First let's begin with an
+ordinary list, which we construct through recursion in the same way we did for
+`NaturalNumber`.
+
+```
+type List(t: Type) constructors {
+    Nil(type: Type): List(type)
+    Cons(type: Type, value: type, restOfList: List(type)): List(type)
+}
+
+val listOfTwoElements = Cons(Boolean, True, Cons(Boolean, False, Nil(Boolean)))
+```
+
+Now we can create a `length` function for this `List` and use it to enforce
+certain invariants in other functions.
+
+```
+function length(t: Type, list: List(t)): NaturalNumber = {
+    case list of {
+        Nil(unused) => Zero
+        Cons(unused0, unused1, rest) => Successor(length(t, rest))
+    }
+}
+
+function head(
+    t: Type,
+    list: List(t),
+    isNonZeroLength: IsEqual(Boolean, greaterThan(length(t, list), zero), True)
+): t {
+    case list of {
+        Nil(unused) =>
+            case isNonZeroLength of {
+                Refl(unused0, unused1) => 
+                    // We can use impossible here because our earlier Nil
+                    // pattern match tells the compiler list = Nil(...) which
+                    // allows it to completely evaluate `length` and therefore
+                    // `greaterThan` to get 
+                    // `greaterThan(length(1, list), zero) = False`.
+                    // But then matching against `Refl` gets the constraint
+                    // `greaterThan(length(1, list), zero) = True`.
+                    //
+                    // This contradiction lets us then use impossible.
+                    impossible
+            }
+        Cons(unusedType, value, unusedRest) =>
+            value
+    }
+}
+
+function append(t: Type, list0: List(t), list1: List(t)): List(t) = {
+    case list0 of {
+        Nil(unused) => 
+            list1
+        Cons(unusedType, value, restOfList) => 
+            Cons(t, value, append(t, restOfList, list1))
+    }
+}
+
+function appendCombinesLength(
+    t: Type,
+    list0: List(t),
+    list1: List(t),
+): IsEqual(NaturalNumber, length(append(t, list0, list1)), add(length(t, list0), length(t, list1))) = {
+    // Proof omitted for brevity
+}
+```
+
+Or we could directly encode the length of a list into its type.
+
+```
+type LengthIndexedList(t: Type, length: NaturalNumber) constructors {
+    // LI for LengthIndexed
+    LINil(type: Type): LengthIndexedList(type, zero)
+
+    LICons(
+        type: Type, 
+        value: type, 
+        lengthOfRestOfList: NaturalNumber,
+        restOfList: LengthIndexedList(type, lengthOfRestOfList)
+    ): List(type, Successor(lengthOfRestOfList))
+}
+
+val aListOfOneElement: LengthIndexedList(Boolean, one) =
+    LICons(Boolean, True, zero, LINil(Boolean))
+
+// Note that lengthOfRestOfList restricts what restOfList can be
+// So e.g. the following is a type error
+val thisDoesNotWork: LengthIndexedList(Boolean, one) =
+    LICons(Boolean, True, one, LINil(Boolean)) // notice one instead of zero
+```
+
+This way we can create an `append` function that directly encodes the fact that
+lengths of the lists sum together, rather than relying on a separate
+`appendCombinesLength`.
+
+```
+function append(
+    t: Type,
+    lengthOfList0: NaturalNumber,
+    lengthOfList1: NaturalNumber,
+    list0: LengthIndexedList(t: Type, length: lengthOfList0),
+    list1: LengthIndexedList(t: Type, length: lengthOfList1),
+): LengthIndexedList(t: Type, length: add(lengthOfList0, lengthOfList1)) = {
+    case list0 of {
+        LINil(unused) => 
+            case lengthOfList0 of {
+                Zero => 
+                    list1
+                Successor(unused) =>
+                    impossible
+            }
+        LICons(unusedType, value, lengthOfRestOfList, restOfList) =>
+            case append(t, restOfList, list1) of {
+                LICons(t, value)
+            }
+            LICons(t, value, Successor(lengthOfRestOfList), append(t, restOfList, list1))
+    }
+}
+```
+
+Personally I prefer using `length` over `LengthIndexedList`, but I'll talk more
+about that in a future post.
+
+## Using dependent types as a way of tagging data
+
+Our final examples of dependent types won't introduce anything new, but will
+move away from the proof-heavy style I've presented above to a much "lighter"
+style that only uses dependent types to tag certain bits of data with additional
+information.
+
+This is the style of programming I personally prefer to use when using dependent
+types. I'll talk about it more at length in a future post.
+
+```
+// Imagine that these constructors are private and cannot be accessed by other
+// modules in our code
+type Sanitized(s: String) private constructors {
+    IsSanitized(s: String): Sanitized(s)
+}
+
+// We may have some low-level way of checking whether a string is sanitized or
+// not, but we generally won't be using this in other code
+private function isStringSafe(s: String): Boolean = {
+    // Some implementation here...
+}
+
+// This is the main function we'll be using and the only way for other modules
+// to create Sanitized data since the constructors are private
+function checkIfStringIsSafe(s: String): Option(Sanitized(s)) = {
+    case isStringSanitized(s) of {
+        True => Some(Sanitized(s))
+        False => None
+    }
+}
+
+// Imagine we have this function in another module. Now we're guaranteed that s
+// must have been checked for safety at some point before passing it into
+// processString.
+// You can't ever forget to check the string!
+function processString(s: String, stringIsSanitized: Sanitized(s)): SomeCustomType = {...}
+
+val someString: String = ...
+
+case (checkIfStringIsSafe(someString)) of {
+    Some(Sanitized(someString), stringIsSafe) => processString(someString, stringIsSafe)
+    None(Sanitized(someString)) => // raise some sort of error
+}
+```
+
+Of course sometimes we can't simply check whether a string is safe or not. We
+can only run it through a sanitizer, which might give us a new and different
+string. So we can instead just tag the data that comes out of the sanitizer.
+
+```
+function sanitizeString(s: String): String = {
+    // Some implementation here...
+}
+
+function proofOfSanitization(s: String): Sanitized(sanitizeString(s)) = {
+    IsSanitized(sanitizeString(s))
+}
+
+val someString: String = ...
+
+val sanitizedString: String = sanitizeString(someString)
+
+// No matter how we implement sanitization, as long as the constructors for
+// Sanitized are kept private, we always guaranteed that all strings passed to
+// processString must have either been checked for or undergone sanitization.
+processString(
+    sanitizedString,
+    // It may look like we're doing redundant work by calling sanitizeString
+    // again in proofOfSanitization. I'll talk in a future post about a feature
+    // that allows this to be purely a compile-time tag with no runtime
+    // performance consequences.
+    proofOfSanitization(someString)
+)
+```
+
+We can encode the latter pattern in a concrete data type called a dependent
+pair, where the type of the second element depends on the value of the first, to
+"carry around the tag with its value."
+
+```
+type DependentPair(t: Type, propType: t -> Type) {
+    CreateDependentPair(t: Type, propType: t -> Type, value: t, prop: propType t): DependentPair(t, propType)
+}
+
+val sanitizeStringWrapped(s: String): DependentPair(String, Sanitized) = {
+    CreateDependentPair(
+        String,
+        Sanitized,
+        sanitizeString(s),
+        // Same thing as function(s) { IsSanitized(s) }
+        IsSanitized
+    )
+}
+
+case sanitizeStringWrapped(someString) of {
+    CreateDependentPair(unused0, unused1, sanitizedString, proofOfSanitization) =>
+        processString(sanitizedString, proofOfSanitization)
+}
+```
+
+## Why do dependently typed languages tend to be pure functional languages?
+
+This is a question that comes up from time to time and now that we've fully
+developed the basics of how to program with dependent types we can explore the
+answer. It boils down to the insight that dependent types assume immutability
+and function purity.
+
+Let's think back to the crucial fulcrum of dependent types: dependent pattern
+matching. We implicitly always assumed that the values we were matching against
+were immutable, otherwise it would be incorrect for the typechecker to assume
+that the different branches of the pattern match guaranteed what the runtime
+value of what we were matching against could be.
+
+```
+case someBoolean of {
+    True =>
+        // Our typechecker now assumes someBoolean is True, but that's not a
+        // safe assumption if someBoolean is mutable. Imagine what would happen
+        // if someBoolean could suddenly change from True to False here!
+        ...
+    False => ...
+}
+```
+
+This means that for most of the places we used dependent types, we implicitly
+assumed that the runtime values we were depending on were immutable.
+
+As for function purity, dependent types rely on evaluation of functions at
+compile time to be able to type check things in the first place. This would
+become rapidly intractable if functions were mutable and so changed their
+behavior over the course of typechecking or if they had side effects and could
+do all sorts of crazy things as your compiler runs.
+
+It is important to note that the way the typechecker evaluates functions does
+not have to be the same way that the the runtime system evaluates the code. For
+example, all throughout this post the typechecker has only been ever partially
+evaluating functions rather than fully evaluating them, which is usually illegal
+for a runtime system to do. You could also imagine that while the typechecker
+performs a very naive, step-by-step evaluation of functions, the runtime system
+compiles functions into something completely different so that e.g. recursion
+turns into loops. You could even imagine different evaluation regimes where the
+typechecker lazily evalates functions but the runtime system eagerly evaluates
+them.
+
+The only constraint (but it is a big constraint) is that the typechecker and the
+runtime system must agree on equality. If the typechecker thinks two things are
+equal the runtime system should have no way of distinguishing them. If the
+typechecker thinks two things are not equal the runtime system should always be
+able to distinguish them. And of course if the typechecker is unable to
+determine equality then the runtime system can do whatever it wants.
+
+Otherwise all your proofs about equality and inequality don't mean anything when
+your code actually runs.
+
+And so that concludes this introduction to dependent types! The next post will
+build upon this understanding of dependent types to talk about their trade-offs
+when it comes to production codebases and how to avoid their pitfalls and
+capitalize on their strengths.
