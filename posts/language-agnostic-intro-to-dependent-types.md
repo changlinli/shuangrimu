@@ -48,7 +48,7 @@ uncritically. This does not represent a personal endorsement of some of the
 patterns I'll be presenting here. In a follow-up post I will detail what common
 patterns in dependently-typed programming I believe to entail the wrong set of
 trade-offs when it comes to production code in most businesses. In particular I
-believe believe that a proof-heavy way of using dependent types is usually not
+believe that a proof-heavy way of using dependent types is usually not
 the best way to leverage dependent types and that this is even more aggravated
 when the proofs are integrated into the data structure (such as the common
 example of length-indexed vectors and type-safe append).
