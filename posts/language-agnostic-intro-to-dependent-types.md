@@ -1,13 +1,12 @@
 ---
 title: A Language Agnostic Introduction to Dependent Types
-cover-image: Prokudin-Gorskii-25_scale.jpg
+cover-image: Shibanpo-bridge.svg
 author: Rimu Shuang
-attribution: 'Public Domain. Shot by Sergey Prokudin-Gorsky. 1910. Originally
-from http://en.wikipedia.org/wiki/File:Prokudin-Gorskii-25.jpg.'
+attribution: 'Roulex 45. <a href="https://commons.wikimedia.org/wiki/File:Shibanpo-bridge.svg">Élévation du pont de Shibapo</a> May 7th, 2010. CC-BY-SA 3.0 License (NOT a CC-BY 4.0 License).'
 subhead: 'An explanation of dependent types that assumes only basic familiarity
 with any statically typed programming language'
 tags: Miscellaneous
-date: 2021-05-22T19:27:26-0800
+date: 2021-08-15T19:27:26-0800
 ---
 
 "Dependent types" seem to be one of those things a lot of programmers have heard
@@ -60,37 +59,40 @@ about them.
 
 This post is long and is structured into several parts:
 
-1. __Introduction to our pseudo-code__ : Our pseudo-code will consist of three
+1. [Introduction to our pseudo-code](#introduction) : Our pseudo-code will consist of three
    main concepts: type constructors, pattern matching, and functions. Dependent
    types derive their power from a special type of types called `Type` that
    allows for more flexible type constructors and additional information passed to
    the type checker while pattern matching.
-2. __Using the Type type__: Dependent types let you work with types just the
+2. [Using the Type type](#type-type): Dependent types let you work with types just the
    same as you would any other value. This lets you recreate stuff like generics
-   without any built-in support for them.
-3. __Creating dependent types__: We can use this increased flexibility to create
+   without any built-in support for them. Note that in the interests of
+   accessibility we will not be addressing the issue of "type-in-type" (i.e.
+   what is the type of `Type`?).
+3. [Creating dependent types](#dependent-types): We can use this increased flexibility to create
    dependent types: types that depend on runtime values.
-4. __Using pattern matching to narrow down runtime values__: Our static
+4. [Using pattern matching to narrow down runtime values](#pattern-matching): Our static
    typechecker needs to be able to statically narrow down runtime values to
    actually work. To do that we will use pattern matching.
-5. __Determining when types are equal__:
-6. __Using type equality to prove runtime properties about our code: Boolean
-   edition__:
-7. __Using type equality to prove runtime properties about our code:
-   NaturalNumber edition__:
-8. __Dependent types in data structures__:
-9. __Using dependent types as a way of tagging data__:
-10. __Using dependent types as a way of tagging data__:
-11. __Why do dependently typed languages tend to be pure functional languages?__:
+5. [Determining when types are equal](#determining-equality): A large part of
+   typechecking dependently typed code is proving two things are equal.
+6. [Using type equality to prove runtime properties about our code: Boolean edition](#proving-boolean): Using the mechanisms that dependent types give us we go over some examples about how to prove properties of code using booleans.
+7. [Using type equality to prove runtime properties about our code: NaturalNumber edition](#proving-natural-num): We do the same thing but now with natural numbers.
+8. [Dependent types in data structures](#dependent-data-structures): We create
+   data structures that intertwine dependent types with their underlying data.
+9. [Using dependent types as a way of tagging data](#data-tagging): We use
+   dependent types in a very lightweight manner to just tag data with
+   properties.
+10. [Why do dependently typed languages tend to be pure functional languages?](#why-functional): We close out by talking about why dependently typed languages tend to be pure functional languages.
 
-## Introduction to our pseudo-code
+## <a id="introduction">Introduction to our pseudo-code</a>
 
 We will be working with some pseudocode inspired by Typescript, Java, Kotlin,
 and Scala. Note that none of these languages have full-blown dependent types of
 the sort I'll be presenting here although Typescript and Scala have some small
 fragments.
 
-It looks something like this:
+The pseudocode looks something like this:
 
 ```
 // This is a comment
@@ -217,7 +219,7 @@ function greaterThan(x: NaturalNumber, y: NaturalNumber): Boolean = {
 }
 ```
 
-## Using the Type type
+## <a id="type-type">Using the Type type</a>
 
 We can also have the equivalent of generics in other languages, however we're
 going to do this in a little different manner.
@@ -275,7 +277,7 @@ function SynonymForBoolean(): Type = Boolean
 val someBool: SomeSynonymForBoolean() = True
 ```
 
-## Creating dependent types
+## <a id="dependent-types">Creating dependent types</a>
 
 But an explicit `Type` by itself isn't a dependent type quite yet. Here's our
 first true dependent type, that is a `Type` that depends on a runtime value.
@@ -302,7 +304,7 @@ literals in a type signature! But of course the question arises, yeah this is
 all and well when we have type constructor literals such as False or True, but
 what happens when you don't have a literal?
 
-## Using pattern matching to narrow down runtime values
+## <a id="pattern-matching">Using pattern matching to narrow down runtime values</a>
 
 Let's take a look at perhaps the simplest "hail Mary" approach where we just try
 to stick in an abstract variable and see what happens.
@@ -369,7 +371,7 @@ tell the compiler more information about which types are equal to each other.**
 This makes dependent pattern matching a more powerful tool than in a
 non-dependently-typed setting.
 
-## Determining when types are equal
+## <a id="determining-equality">Determining when types are equal</a>
 
 But to understand this in more detail, we have to understand the phrase "what
 type are equal to each other" in more detail. All languages with static type
@@ -471,7 +473,7 @@ compare two types for equality.
   either type fully, it sees that they are syntactically identical and therefore
   concludes that they are equal.
 
-## Using type equality to prove runtime properties about our code: Boolean edition
+## <a id="proving-boolean">Using type equality to prove runtime properties about our code: Boolean edition</a>
 
 So that's a brief look at type equality. Let's see how we can make of use of
 that more explictly in our code. First let's return to our very first type
@@ -926,7 +928,7 @@ val anythingGoes: IsEqual(Boolean, True, False) =
     principleOfExplosion(IsEqual(Boolean, True, False), someContradiction)
 ```
 
-## Using type equality to prove runtime properties about our code: NaturalNumber edition
+## <a id="proving-natural-num">Using type equality to prove runtime properties about our code: NaturalNumber edition</a>
 
 Now let's move away from `Boolean`s and make some propositions about
 `NaturalNumber`s.
@@ -1140,7 +1142,7 @@ Let's examine why `desiredEquality` type checks in a little bit more detail.
 Whew that one was a bit of a doozy! It gets easier once you've done a lot of
 these and start to develop some intuition.
 
-## Dependent types in data structures
+## <a id="dependent-data-structures">Dependent types in data structures</a>
 
 We've seen so far how we can use dependent types to make assertions about your
 code that can be proved in the type system. We can also use dependent types
@@ -1268,7 +1270,7 @@ function append(
 Personally I prefer using `length` over `LengthIndexedList`, but I'll talk more
 about that in a future post.
 
-## Using dependent types as a way of tagging data
+## <a id="data-tagging">Using dependent types as a way of tagging data</a>
 
 Our final examples of dependent types won't introduce anything new, but will
 move away from the proof-heavy style I've presented above to a much "lighter"
@@ -1369,7 +1371,7 @@ case sanitizeStringWrapped(someString) of {
 }
 ```
 
-## Why do dependently typed languages tend to be pure functional languages?
+## <a id="why-functional">Why do dependently typed languages tend to be pure functional languages?</a>
 
 This is a question that comes up from time to time and now that we've fully
 developed the basics of how to program with dependent types we can explore the
