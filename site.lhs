@@ -378,7 +378,7 @@ This is for parsing
 >             loadAllSnapshotsNoVersion "posts/*" "content"
 >         renderer feedConfig feedCtx posts
 > 
-> getItemTitle :: MonadMetadata m => Identifier -> m Text
+> getItemTitle :: (MonadFail m, MonadMetadata m) => Identifier -> m Text
 > getItemTitle identifier = do
 >     metadata <- getMetadata identifier
 >     case Map.lookup "title" metadata of
