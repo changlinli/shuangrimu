@@ -15,7 +15,7 @@ of my examples. In particular I did not include additional `IsSanitized(s)` and
 did not actually end up using the `recursiveEquality` value in
 `addingZeroOnRightDoesNothing`. Those errors have now been fixed. Many thanks to
 Tom! I have separately also added an additional simple example of proving a
-contradiction.__
+contradiction and elaborated somewhat on my string sanitization example.__
 
 "Dependent types" seem to be one of those things a lot of programmers have heard
 about, but don't really know much about it. Discussion forums talk about how you
@@ -1335,8 +1335,29 @@ function processString(s: String, stringIsSanitized: Sanitized(s)): SomeCustomTy
 val someString: String = ...
 
 case (checkIfStringIsSafe(someString)) of {
-    Some(Sanitized(someString), stringIsSafe) => processString(someString, stringIsSafe)
-    None(Sanitized(someString)) => // raise some sort of error
+    // We don't use the first arguments of Some and None because those are just
+    // types. This is similar to how in a non-dependently-typed language when we
+    // match on e.g. an Option<Int> type we only match against Some(someInt) and
+    // None instead of also matching on the Int generic.
+    Some(unused, stringIsSafe) => 
+        processString(someString, stringIsSafe)
+    None(unused) => // raise some sort of error
+}
+
+// Now let's do an example of where the type system tells us we've messed up.
+
+val someOtherString: String = ...
+
+// Note that this is an error! We are checking someString instead of
+// someOtherString
+case (checkIfStringIsSafe(someString)) of {
+    Some(unused, stringIsSafe) => 
+        // This is a type error and the compiler would reject this code, because
+        // stringIsSafe here is associated with someString, not someOtherString.
+        // Dependent types ensure you are checking the correct string, not any
+        // old string.
+        processString(someOtherString, stringIsSafe)
+    None(unused) => // raise some sort of error
 }
 ```
 
