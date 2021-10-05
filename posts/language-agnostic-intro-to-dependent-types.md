@@ -9,6 +9,14 @@ tags: Miscellaneous
 date: 2021-08-15T19:27:26-0800
 ---
 
+__EDIT (2021-10-05): Tom Smeding has kindly pointed out several errors in a few
+of my examples. In particular I did not include additional `IsSanitized(s)` and
+`Sanitized(s)` arguments to `Some` and `None` in `checkIfStringIsSafe`. I also
+did not actually end up using the `recursiveEquality` value in
+`addingZeroOnRightDoesNothing`. Those errors have now been fixed. Many thanks to
+Tom! I have separately also added an additional simple example of proving a
+contradiction.__
+
 "Dependent types" seem to be one of those things a lot of programmers have heard
 about, but don't really know much about it. Discussion forums talk about how you
 can prove things with dependent types and how they're so so awesome for program
@@ -886,6 +894,21 @@ Hence we can read any function with `Contradiction` as its output type as provin
 all its input types cannot all simultaneously be true, they must contradict each
 other.
 
+And indeed, with this interpretation it becomes possible to state that in fact
+`IsEqual(Boolean, True, False)` is impossible. By pattern matching on `Refl` we
+immediately introduce a contradiction among base constructors, namely `True` and
+`False`.
+
+```
+function trueCannotBeFalse(
+    trueEqualToFalse: IsEqual(Boolean, True, False)
+): Contradiction = {
+    case trueEqualToFalse of {
+        Refl(unused0, unused1) => impossible
+    }
+}
+```
+
 Here's another example.
 
 ```
@@ -1076,15 +1099,15 @@ constructed earlier.
 // are what
 val desiredEquality: IsEqual(
     NaturalNumber, 
-    Successor(add(x0, Zero)), 
-    Successor(x0)
+    Successor(x0),
+    Successor(add(x0, Zero))
 ) = functionsPreserveEquality(
     t0 = NaturalNumber,
     t1 = NaturalNumber,
-    x = add(x0, Zero),
-    y = x0,
+    x = x0,
+    y = add(x0, Zero),
     f = function(a) { Successor(a) },
-    xEqualToY = IsEqual(NaturalNumber, add(x0, Zero), x0)
+    xEqualToY = // Insert some value of type IsEqual(NaturalNumber, x0, add(x0, Zero))
 )
 ```
 
@@ -1095,6 +1118,7 @@ function addingZeroOnRightDoesNothing(x: NaturalNumber): IsEqual(NaturalNumber, 
     case x of {
         Zero => Refl(NaturalNumber, x) // Refl(NaturalNumber, Zero)
         Successor(x0) =>
+            // This is exactly what can go into xEqualToY in desiredEquality
             val recursiveEquality: IsEqual(NaturalNumber, x0, add(x0, Zero)) = 
                 addingZeroOnRightDoesNothing(x0)
 
@@ -1108,7 +1132,7 @@ function addingZeroOnRightDoesNothing(x: NaturalNumber): IsEqual(NaturalNumber, 
                 x = x0,
                 y = add(x0, Zero),
                 f = function(a) { Successor(a) },
-                xEqualToY = IsEqual(NaturalNumber, x0, add(x0, Zero))
+                xEqualToY = recursiveEquality
             )
 
             // Note that because of pattern matching on Successor(x0) we know
@@ -1296,9 +1320,9 @@ private function isStringSafe(s: String): Boolean = {
 // This is the main function we'll be using and the only way for other modules
 // to create Sanitized data since the constructors are private
 function checkIfStringIsSafe(s: String): Option(Sanitized(s)) = {
-    case isStringSanitized(s) of {
-        True => Some(Sanitized(s))
-        False => None
+    case isStringSafe(s) of {
+        True => Some(Sanitized(s), IsSanitized(s))
+        False => None(Sanitized(s))
     }
 }
 
