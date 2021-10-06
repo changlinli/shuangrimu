@@ -707,11 +707,6 @@ function equalityIsPreservedForNot(
     }
 }
 ```
-The exact same function body also lets us prove this new statement. The reason
-is that `not(not(x))` and `notNot(x)` are both able to evaluate in each branch
-of the `case` statement when applied to `True` and `False` and after evaluation
-the compiler observes that the results are syntactically identical.
-
 In the `Refl` branch (which is the only branch), the type checker must unify the
 original type of `xEqualToY` with the new one introduced by `Refl`. So in
 particular the type checker now knows `IsEqual(Boolean, x, y) = IsEqual(Boolean,
