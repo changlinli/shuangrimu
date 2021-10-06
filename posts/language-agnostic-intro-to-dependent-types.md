@@ -1190,6 +1190,9 @@ function length(t: Type, list: List(t)): NaturalNumber = {
     }
 }
 
+// This is how it's used
+val thisWillBeTwo: NaturalNumber = length(Boolean, listOfTwoElements)
+
 function head(
     t: Type,
     list: List(t),
@@ -1228,7 +1231,7 @@ function appendCombinesLength(
     t: Type,
     list0: List(t),
     list1: List(t),
-): IsEqual(NaturalNumber, length(append(t, list0, list1)), add(length(t, list0), length(t, list1))) = {
+): IsEqual(NaturalNumber, length(t, append(t, list0, list1)), add(length(t, list0), length(t, list1))) = {
     // Proof omitted for brevity
 }
 ```
