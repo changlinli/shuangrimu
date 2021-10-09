@@ -702,8 +702,8 @@ function equalityIsPreservedForNot(
 ): IsEqual(Boolean, not(x), not(y)) = {
     case xEqualToY of {
         Refl(unused0, unused1) => 
-            // Refl(Boolean, y) would work too
-            Refl(Boolean, x)
+            // Refl(Boolean, not(y)) would work too
+            Refl(Boolean, not(x))
     }
 }
 ```
@@ -723,10 +723,10 @@ So roughly we get the following steps, which results in a successful type check.
                                           // the constraint x = y
         }
 
-2. Compare IsEqual(Boolean, x, x) (type of Refl(Boolean, x)) with IsEqual(Boolean, x, y)
-3. Boolean = Boolean, x = x, now compare x with y
-4. But we know that x = y so therefore the compiler can prove IsEqual(Boolean, x, x) = IsEqual(Boolean, x, y)
-5. Therefore Refl(Boolean, x) successfully type checks
+2. Compare IsEqual(Boolean, not(x), not(x)) (type of Refl(Boolean, not(x))) with IsEqual(Boolean, not(x), not(y))
+3. Boolean = Boolean, not(x) = not(x), now compare not(x) with not(y)
+4. But we know that x = y so therefore the compiler can prove IsEqual(Boolean, not(x), not(x)) = IsEqual(Boolean, not(x), not(y))
+5. Therefore Refl(Boolean, not(x)) successfully type checks
 ```
 
 Given a function type `A -> B` so that e.g. `not` has the type `Boolean ->
