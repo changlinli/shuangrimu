@@ -849,9 +849,9 @@ function xCannotBeBothTrueAndFalse(
     xEqualToFalse: IsEqual(Boolean, x, False)
 ): Contradiction = {
     case (x, xEqualToTrue, xEqualToFalse) of {
-        (True, Refl(unused0, unused1), IsEqual(unused2, unused3)) =>
+        (True, Refl(unused0, unused1), Refl(unused2, unused3)) =>
             impossible
-        (False, Refl(unused0, unused1), IsEqual(unused2, unused3)) =>
+        (False, Refl(unused0, unused1), Refl(unused2, unused3)) =>
             impossible
     }
 }
@@ -879,7 +879,7 @@ function xCannotBeBothTrueAndFalseNewVersion(
     xEqualToFalse: IsEqual(Boolean, x, False)
 ): Contradiction = {
     case (xEqualToTrue, xEqualToFalse) of {
-        (Refl(unused0, unused1), IsEqual(unused2, unused3)) =>
+        (Refl(unused0, unused1), Refl(unused2, unused3)) =>
             impossible
     }
 }
