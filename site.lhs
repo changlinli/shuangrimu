@@ -64,6 +64,7 @@ Actual Code
 > import qualified Data.Set as Set
 > import qualified Data.HashMap.Lazy as Map
 > import qualified Data.Aeson.Types as Aeson
+> import           Data.Aeson.KeyMap (toHashMap)
 > import           Data.Text (Text, pack, strip, unpack)
 > import qualified Data.Text as Text
 > import           Control.Monad
@@ -381,7 +382,7 @@ This is for parsing
 > getItemTitle :: (MonadFail m, MonadMetadata m) => Identifier -> m Text
 > getItemTitle identifier = do
 >     metadata <- getMetadata identifier
->     case Map.lookup "title" metadata of
+>     case Map.lookup "title" (toHashMap metadata) of
 >          Nothing -> fail $ "We were unable to find a title for " ++ show identifier
 >          Just title -> case title of 
 >                             Aeson.String titleText -> return titleText
