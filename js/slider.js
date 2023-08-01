@@ -3,6 +3,13 @@ slider.js
 Javascript file for regulating the content-slider. 
 Requires jQuery to function. 
 */
+document.addEventListener('DOMContentLoaded', function() {
+  const slider = document.getElementById('content-slider');
+  slider.addEventListener('mouseover', (_ev) => {
+    const sliderButtonForward = document.getElementById('slider-button-forward');
+
+  });
+});
 $(document).ready(function()
 {
 	$("#content-slider").hover(function()
