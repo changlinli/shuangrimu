@@ -1,3 +1,14 @@
+---
+title: "Interesting Things" in Formal Verification
+cover-image: Prokudin-Gorskii-25_scale.jpg
+author: Rimu Shuang
+attribution: 'Public Domain. Shot by Sergey Prokudin-Gorsky. 1910. Originally
+from http://en.wikipedia.org/wiki/File:Prokudin-Gorskii-25.jpg.'
+subhead: A rough sketch of things I find "interesting" in formal verification
+tags: formal_verification
+date: 2023-08-10T12:15:00-0800
+---
+
 # A rough sketch of "interesting things" in formal verification
 
 Formal verification is an extremely wide umbrella that covers basically any form
