@@ -324,7 +324,7 @@ function useAtRuntime(boolean: Boolean): NaturalNumber = {
     // compiler can't evaluate abstract variables so it can't figure out what
     // type ShapeOrNumber(boolean) evaluates to, which is just as well since
     // this can't possibly work if boolean is False
-    val thisDoesntCompile: ShapeOrNumber(boolean) = 1
+    val thisDoesntCompile: ShapeOrNumber(boolean) = one
     thisDoesntCompile
 }
 ```
@@ -353,19 +353,19 @@ function useAtRuntimeTryAgain(boolean: Boolean): NaturalNumber = {
             //
             // Because the typechecker now knows that boolean is True it can
             // proceed to evaluate ShapeOrNumber to get NaturalNumber.
-            val result: ShapeOrNumber(boolean) = 1
+            val result: ShapeOrNumber(boolean) = one
             result
         }
         False => 
             // In this branch the typechecker now knows that boolean is False
             // We aren't doing anything with this information but we could've
             // used it to create something like `val someValue: ShapeOrNumber(boolean) = Circle`
-            0
+            zero
     }
 }
 
-// useAtRuntimeTryAgain(True) is 1
-// useAtRuntimeTryAgain(False) is 0
+// useAtRuntimeTryAgain(True) is Zero
+// useAtRuntimeTryAgain(False) is Successor(Zero)
 ```
 
 This is important! Pattern matching in a dependently typed language can be
